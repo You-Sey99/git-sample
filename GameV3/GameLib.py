@@ -563,11 +563,7 @@ class Box():
 class Card(Box):
     def __init__(self, c_no:int, rect=((CARD_X, CARD_Y), CARD_SIZE), kado=KADO_DEFO, surface=GAMENN, img=None) -> None:
         super().__init__(rect, kado, surface, img)
-        try:
-            self.no = int(c_no)
-        except (ValueError):
-            self.no = 0
-
+        self.no = int(c_no)
         self.movable = False
 
 
@@ -605,16 +601,31 @@ class Card(Box):
             self.y = mp[1]
         return mp
 
-    def move(self, pos_x:float,pos_y:float,speed=10) -> bool:
+    def move(self, pos_x:float,pos_y:float,speed=10) -> bool:#角度での分岐難しい
         if abs(pos_x -self.x) <= speed or abs(pos_y - self.y) <= speed:#近くに来たら合わせる
             self.x = pos_x
             self.y = pos_y
             return True
         else:#どんな角度でも同じ速さで動く.はず
-            tan = (pos_y - self.y)/(pos_x - self.x)
-            siita = math.atan(tan)
-            self.x = speed*math.cos(siita)
-            self.y = speed*math.sin(siita)
+            if pos_x == self.x:
+                siita = math.radians(90)
+            else:
+                tan = (pos_y - self.y)/(pos_x - self.x)
+                siita = math.atan(tan)
+            
+            if pos_x < self.x:
+                c_siita = math.pi - siita
+            else:
+                c_siita = siita
+
+            if pos_y < self.y:
+                s_siita = siita*(-1)
+            else:
+                s_siita = siita
+            
+            self.x = self.x + speed*math.cos(c_siita)
+            self.y = self.y + speed*math.sin(s_siita)
+            self.set_pos(self.x,self.y)
             return False
 
     def set_no(self, no:int) -> bool:
@@ -674,7 +685,7 @@ if __name__ == "__main__":
     GAMENN.fill(Iro.SIRO)
     a = Card(0)
     a.paint(alpha=230)
-    a.set_img(pg.image.load("gazou/migi.png"))
+    a.set_img(pg.image.load("GameV3/gazou/migi.png"))
     a.paint_img()
     pg.display.update()
     break_code = False
@@ -705,7 +716,8 @@ if __name__ == "__main__":
                     mp = pg.mouse.get_pos()
                     fin = False
                     while not fin:
-                        fin = a.move(pos_x=mp[0],pos_y=mp[1])
+                        #print("2")
+                        fin = a.move(pos_x=mp[0],pos_y=mp[1],speed=1)
                         GAMENN.fill(Iro.SANDBROWN)
                         a.paint()
                         pg.display.update()
