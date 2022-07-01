@@ -17,7 +17,7 @@ pg.display.set_caption("Normal_Mode")
 
 class CardStorage():
     def __init__(self,pos_x=CARD_X,pos_y=CARD_Y,c_max=CARD_X) -> None:
-        self.strg = [Card(0,rect=(pos_x,pos_y+i*CARD_ZURE_Y)) for i in range(c_max+1)]
+        self.strg = [lib.Card(0,rect=(pos_x,pos_y+i*CARD_ZURE_Y)) for i in range(c_max+1)]
         self.x = pos_x
         self.y = pos_y
         self.w = CARD_X
