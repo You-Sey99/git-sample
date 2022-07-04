@@ -605,26 +605,30 @@ class Card(Box):
         if abs(pos_x -self.x) <= speed or abs(pos_y - self.y) <= speed:#近くに来たら合わせる
             self.x = pos_x
             self.y = pos_y
+            self.set_pos(self.x,self.y)
             return True
         else:#どんな角度でも同じ速さで動く.はず
             if pos_x == self.x:
                 siita = math.radians(90)
             else:
-                tan = (pos_y - self.y)/(pos_x - self.x)
-                siita = math.atan(tan)
-            
-            if pos_x < self.x:
-                c_siita = math.pi - siita
-            else:
-                c_siita = siita
+                tan = ((pos_y - self.y)/(pos_x - self.x))
+                siita = math.atan(tan)#-pi/2~pi/2
+            #print(siita/math.pi,"π\n")
+            if pos_x < self.x:#この時がおかしい <- なおった
+                speed = -speed
 
-            if pos_y < self.y:
-                s_siita = siita*(-1)
-            else:
-                s_siita = siita
-            
-            self.x = self.x + speed*math.cos(c_siita)
-            self.y = self.y + speed*math.sin(s_siita)
+            #if pos_y < self.y:
+                #siita = siita + math.pi
+            """
+            while siita > 2*math.pi:
+                siita = siita - 2*math.pi
+
+            while siita < 0:
+                siita = siita + 2*math.pi
+            """
+            #print("rad=",siita/math.pi,"π\n")
+            self.x = self.x + speed*math.cos(siita)
+            self.y = self.y + speed*math.sin(siita)
             self.set_pos(self.x,self.y)
             return False
 
