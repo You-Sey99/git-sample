@@ -606,10 +606,10 @@ class Card(Box):#カードのクラス
         res = self.hit()#memo ^- back_ground関数を渡したい <- 他のとこと相互に関連するからできればやめたい <- dragの使い方を工夫した
         if self.movable and (res or catch):
             #print("mo")
-            mp = pg.mouse.get_pos()
-            x = mp[0] - self.wide/2
+            mp = pg.mouse.get_pos()#マウスの位置を取得
+            x = mp[0] - self.wide/2#カードの真ん中にマウスカーソルが来るようにした
             y = mp[1] - self.high/2
-            self.set_pos(x,y)
+            self.set_pos(x,y)#カードの位置の更新
         else:
             pass
 
@@ -756,7 +756,7 @@ if __name__ == "__main__":#デバッグ用
                     
 
                 elif event[ev].type == pg.MOUSEBUTTONDOWN:
-                    mb = pg.mouse.get_pressed()
+                    mb = pg.mouse.get_pressed()#dragの使い方はここ
                     while mb[0]:
                         drg = a.drag(drg)
                         mb = pg.mouse.get_pressed()
