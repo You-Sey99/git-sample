@@ -6,7 +6,7 @@ import Iro_RGB as Iro
 import pygame as pg
 
 #定数とかを入れたファイル
-GAM_SIZE = (600,500)#画面の大きさ
+GAM_SIZE = (600,500)#最初の画面の大きさ
 CARD_X = 100#カードの位置
 CARD_Y = 40
 CARD_SIZE = (60,120)#カードの大きさ
@@ -14,6 +14,20 @@ KADO_DEFO = 10#角の丸み
 WAKU_DEFO = 2#枠の太さ
 CARD_ZURE_X = int(CARD_SIZE[0]/2)#カードのずれ
 CARD_ZURE_Y = int(CARD_SIZE[1]/3)
+
+SCORE_X = 480#scoreの表示位置
+SCORE_Y = 80#
+SCORE_T_X = SCORE_X + 20#「スコア」の表示位置
+SCORE_T_Y = SCORE_Y + 50#
+
+POSE_X = 480#一時停止ボタンの表示位置
+POSE_Y = 300
+
+SCORE_RECT = (SCORE_X,SCORE_Y,0,0)#rect型
+SCORE_T_RECT = (SCORE_T_X,SCORE_T_Y,0,0)
+POSE_RECT = (POSE_X,POSE_Y,0,0)
+
+GAM_SOTO =5
 
 COL_LAS = Iro.iro_last() + 1#IroListの数+1,これで%しとけばindenterrarはしないはず
 
@@ -38,5 +52,10 @@ font_tyuu = pg.font.SysFont("hg正楷書体pro",40)
 font_Dai = pg.font.SysFont("hg正楷書体pro",50)
 font_KyoDai = pg.font.SysFont("hg正楷書体pro",70)
 font_KyoDaii = pg.font.SysFont("hg正楷書体pro",75)
+
+
+pg.mixer.init()
+SE_Click = pg.mixer.Sound("oto\se_maoudamashii_element_wind02.mp3")
+SE_Drag = pg.mixer.Sound("oto\ファイル名.mp3")
 
 

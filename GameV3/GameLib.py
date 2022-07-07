@@ -362,7 +362,7 @@ class Scene():#ゲームの各場面を管理するクラスの元,必要なメ�
         self.bgc = bgc
         self.frame_size = frame_size
 
-    def main(self) -> None:
+    def main(self) -> None:#メインループ,
         while 1:
             self.clock.tick(self.clock_time)
             mo_pos = pg.mouse.get_pos()
@@ -394,41 +394,43 @@ class Scene():#ゲームの各場面を管理するクラスの元,必要なメ�
                 self.ev_no_event()
 
 
-    def befor_event(self) -> None:
+    def befor_event(self) -> None:#イベント取得前にやること
         pass
 
-    def window_out(self) -> None:
+    def window_out(self) -> None:#マウスカーソルが指定範囲外に出たときにやること
         pass
 
-    def ev_befor(self, event:pg.event) -> None:
+    #ev_シリーズは各イベントを処理するメソッド,主にこれをオーバーライドする
+    def ev_befor(self, event:pg.event) -> None:#イベントを処理する前に毎回やること
         pass
 
-    def ev_quit(self,event:pg.event) -> None:
+    def ev_quit(self,event:pg.event) -> None:#右上の×を押したときのやつ
         if event.type == pg.QUIT:
             sys.exit()
 
-    def ev_mouse(self,event:pg.event) -> None:
+    def ev_mouse(self,event:pg.event) -> None:#マウス関連のイベント
         pass
 
-    def ev_key(self,event:pg.event) -> None:
+    def ev_key(self,event:pg.event) -> None:#キーボードが押されたor放した時のイベント
         pass
 
-    def ev_window(self, event:pg.event) -> None:
+    def ev_window(self, event:pg.event) -> None:#画面から出たり,画面に入ったりした時のイベント,たぶん使わん
         pass
 
-    def ev_no_event(self) -> None:
+    def ev_no_event(self) -> None:#イベントが何もなかった時にやるイベント
         pass
 
-    def ev_other(self, event:pg.event) -> None:
+    def ev_other(self, event:pg.event) -> None:#上に描かれてないイベントが起こったときのイベント
         pass
 
-    def ev_after(self, event:pg.event) -> None:
+    def ev_after(self, event:pg.event) -> None:#イベントを処理した後に毎回やること
         pass
 
-    def back_ground(self) -> None:#display.updateは別にしとく
-        self.surface.fill(self.bgc)
-        self.disp_w, self.disp_h = self.surface.get_size()
-        pg.draw.rect(self.surface,Iro.KURO, (0,0,self.disp_w,self.disp_h),width=self.frame_size)
+    def back_ground(self) -> None:#背景の更新,デフォルトで背景の塗りつぶしと外枠の(サイズ変更+表示)をする
+        #display.updateをここに入れると追加でカードとかを表示するときにチカチカするから別にしとく
+        self.surface.fill(self.bgc)#背景の塗りつぶし
+        self.disp_w, self.disp_h = self.surface.get_size()#画面のサイズを取得
+        pg.draw.rect(self.surface,Iro.KURO, (0,0,self.disp_w,self.disp_h),width=self.frame_size)#画面の外枠を表示
 
 
 class Box():#Card,TxtBox,Bottunのもとになるクラス
@@ -701,8 +703,8 @@ class TxtBox(Box):#文字を表示できるようになったBox
         return self.txt
 
 class Bottun(TxtBox):#クリックとかしたら反応するボタンのクラス
-    def __init__(self) -> None:
-        super().__init__()
+    def __init__(self, txt: str, fonnt=font, rect=((CARD_X, CARD_Y), CARD_SIZE), kado=KADO_DEFO, surface=GAMENN, img=None) -> None:
+        super().__init__(txt, fonnt, rect, kado, surface, img)
 
     def hit(self):#ボタンを押したら押された演出をする,...予定
         res = super().hit()
