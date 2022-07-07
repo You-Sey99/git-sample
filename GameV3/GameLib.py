@@ -2,6 +2,7 @@
 
 
 
+from pandas import bdate_range
 import Iro_RGB as Iro
 import pygame as pg
 import numpy as np
@@ -16,22 +17,22 @@ GAMENN = pg.display.set_mode(GAM_SIZE,pg.RESIZABLE)
 pg.display.set_caption("Lib")
 
 
-class Sound():
+class Sound():#SEとかBGMを管理するクラス,インスタンス化して使う
     def __init__(self,vol = 5,unit=SOUND_UNIT,sounds={}) -> None:
-        if not pg.mixer.get_init:
+        if not pg.mixer.get_init:#mixirが初期化されてなかったら初期化する
             pg.mixer.init
-        self.vol = vol
-        self.unit = unit
+        self.vol = vol#音量
+        self.unit = unit#音量を調整する単位
 
-        self.sounds = {}
+        self.sounds = {}#辞書型で各音と名前をセットにする
         count = 0
         if isinstance(sounds,dict):#soundsが辞書型の時
-            for i in sounds.values():
-                if isinstance(sounds[i],pg.mixer.Sound):
+            for i in sounds.values():#引数soundsの各要素を1つずつ取り出し
+                if isinstance(sounds[i],pg.mixer.Sound):#Soundオブジェクトを渡してきたとき
                     self.sounds[i] = sounds[i]
                     self.sounds[i].set_volume(self.unit*self.vol)
 
-                elif isinstance(sounds,str):
+                elif isinstance(sounds,str):#パスを指定してきたとき
                     try:
                         self.sounds[i] = pg.mixer.Sound(sounds[i])
                         self.sounds[i].set_volume(self.unit*self.vol)
@@ -41,14 +42,13 @@ class Sound():
         if count > 0:
             print("era-\n can't found ",count, " files\n")
 
-        if (len(self.sounds) < len(sounds)):
-            self.pur = False
-
+        if (len(self.sounds) < len(sounds)):#purは全部読込めたかどうか,
+            self.pur = False#__init__は返り値を設定できないから一応インスタンス変数に入れておいた
         else:
             self.pur = True
 
 
-    def set_vol(self,vol:int) -> int:
+    def set_vol(self,vol:int) -> int:#音量を変更するメソッド
         try:
             self.vol = int(vol)
         except(ValueError):
@@ -63,7 +63,7 @@ class Sound():
 
         return self.vol
 
-    def set_unit(self,unit:float) -> float:
+    def set_unit(self,unit:float) -> float:#音量変更の単位を変えるメソッド
         try:
             self.unit = float(unit)
         except(ValueError):
@@ -76,7 +76,7 @@ class Sound():
 
         return self.unit
 
-    def add_sounds(self,sounds:dict) -> int:
+    def add_sounds(self,sounds:dict) -> int:#音の種類を追加するメソッド
         count = 0
         if isinstance(sounds,dict):#soundsが辞書型の時
             for i in sounds.values():
@@ -97,7 +97,7 @@ class Sound():
         return count
 
 
-    def del_sounds(self,key:str) -> pg.mixer.Sound:
+    def del_sounds(self,key:str) -> pg.mixer.Sound:#音の種類を減らすメソッド
         if isinstance(key,str):#soundsが辞書型の時
             if key in self.sounds:
                 return self.sounds.pop(key)
@@ -111,7 +111,7 @@ class Sound():
         
         return None
 
-    def play_sound(self,key:str,count:int) -> bool:
+    def play_sound(self,key:str,count:int) -> bool:#keyに一致する音を再生するメソッド,count=-1でずっと繰り返し
         if isinstance(key,str):#keyがstr型の時
             if key in self.sounds:#keyがsoundsの中にあるとき
                 try:#回数をキャストできなかったら1回
@@ -124,7 +124,7 @@ class Sound():
 
         return False
 
-    def stop_sound(self,key:str) -> bool:
+    def stop_sound(self,key:str) -> bool:#keyに一致する音の再生を停止するメソッド
         if isinstance(key,str):#keyがstr型の時
             if key in self.sounds:#keyがsoundsの中にあるとき
                 self.sounds[key].stop()
@@ -146,28 +146,28 @@ class Sound():
     def get_unit(self) -> float:
         return self.unit
                 
-class GameData():
+class GameData():#ゲームデータのやり取りをするクラス,あったら便利だと思ったから作った
     def __init__(self,card_no=[0 for i in range(CARD_KAZU)],okiba_no=[[0 for i in range(C_MAX)] for j in range(OKIBA_KAZU)],time=float(0),score=0) -> None:
-        self.card_no=[0 for i in range(CARD_KAZU)]
+        self.card_no=[0 for i in range(CARD_KAZU)]#最初にデータを入れる場所を作る
         self.okiba_no=[[0 for i in range(C_MAX)] for j in range(OKIBA_KAZU)]
         count = 0
 
-        for i in range(CARD_KAZU):
-            try:
+        for i in range(CARD_KAZU):#ここからデータを取り込んでいく
+            try:#プレイヤーがいじれるところにはできるだけtryを付けたい
                 self.card_no[i] = int(card_no[i])
-            except (IndexError,ValueError):
+            except (IndexError,ValueError):#エラー名のところは一個なら()はいらない
                 self.card_no[i] = random.randint(RAND_MIN,RAND_MAX)
                 count = 1
             
             if self.card_no[i] < RAND_MIN or RAND_MAX <= self.card_no[i]:
                     self.card_no[i] = random.randint(RAND_MIN,RAND_MAX)
                     count = 1
-        if count:
-            print("era- :can't get card\n")
+        if count:#データの取り込みがうまくいってないとこがあったら教える
+            print("era- :can't get card\n")#<-は実際にエラーにして文章を表示することもできる
             count = 0
 
 
-        for i in range(OKIBA_KAZU):
+        for i in range(OKIBA_KAZU):#↑とおんなじ感じ
             for j in range(C_MAX):
                 try:
                     self.okiba_no[i][j] = int(okiba_no[i][j])
@@ -195,7 +195,7 @@ class GameData():
             print("era- :can't get score\n")
             self.score = 0
         
-    def set_card(self, card_no:list) -> bool:
+    def set_card(self, card_no:list) -> bool:#この後のset系はCardとかStrageとかだけデータを取り込むメソッド
         count = True
         for i in range(CARD_KAZU):
             try:
@@ -243,7 +243,7 @@ class GameData():
             return False
         return True
 
-    def set_gamedata(self, gamedata:list) -> bool:
+    def set_gamedata(self, gamedata:list) -> bool:#これはsetメソッド4つを一気にできるメソッド
         card = self.card_no
         okiba = self.okiba_no
         time = self.time
@@ -268,7 +268,7 @@ class GameData():
     def get_gamedata(self) -> list:
         return [self.card_no,self.okiba_no,self.time,self.score]
 
-    def install(self) -> list:
+    def install(self) -> list:#ファイルからデータを取り込むメソッド
         try:#ゲームデータを取得
             with open("GameData.txt",mode="r") as g_data:
                 card = g_data.readline()
@@ -340,7 +340,7 @@ class GameData():
         else:
             return [None]
 
-    def save(self) -> None:
+    def save(self) -> None:#ファイルにデータを書き込むメソッド
         with open("GameData.txt",'w') as g_data:
             g_data.write(self.card_no)
             g_data.write("\n")
@@ -353,7 +353,7 @@ class GameData():
             g_data.write("\n")
 
 
-class Scene():
+class Scene():#ゲームの各場面を管理するクラスの元,必要なメソッドだけオーバーライドして使う想定
     def __init__(self, frame_size=5, bgc=Iro.IRO_List[Iro.iro_num(Iro.MOKKASIN)], clock=30, surface=GAMENN):
         self.surface = surface
         self.disp_w, self.disp_h = self.surface.get_size()
@@ -431,20 +431,20 @@ class Scene():
         pg.draw.rect(self.surface,Iro.KURO, (0,0,self.disp_w,self.disp_h),width=self.frame_size)
 
 
-class Box():
+class Box():#Card,TxtBox,Bottunのもとになるクラス
     def __init__(self, rect=((CARD_X,CARD_Y),CARD_SIZE), kado=KADO_DEFO, surface=GAMENN, img=None) -> None:
-        np_rect = np.array(rect)
+        np_rect = np.array(rect)#ここと一個下の文でrectの形をそろえる
         np_rect = np.reshape(np_rect,(4, ))
         self.x = float(np_rect[0])
         self.y = float(np_rect[1])
         self.wide = float(np_rect[2])
         self.high = float(np_rect[3])
 
-        self.kado = int(kado)
+        self.kado = int(kado)#角の丸み
 
-        self.rect = (self.x, self.y, self.wide, self.high)
-        self.sur = surface
-        if isinstance(img,pg.Surface):
+        self.rect = (self.x, self.y, self.wide, self.high)#rect型で扱った方が楽なところもあるから用意した,x,y,wide,highをいじるときはこれも書き換えるかset_posとかで書き換えること
+        self.sur = surface#表示する画面の指定
+        if isinstance(img,pg.Surface):#表示する画像の設定,初期値では画像無し,分岐はSoundsクラスのとこと一緒
             self.img = img
         elif isinstance(type(img), str):
             try:
@@ -456,11 +456,11 @@ class Box():
             self.img = None
         
         
-    def paint(self,col=Iro.KURO,alpha=255) -> None:
+    def paint(self,col=Iro.KURO,alpha=255) -> None:#pygameの四角を表示するメソッド,alphaで透明度を変えれる(0~255)
         coler = col + (alpha, )
         pg.draw.rect(self.sur, coler, self.rect, border_radius=self.kado)
 
-    def paint_img(self, alpha=255,add_x=0,add_y=0) -> bool:
+    def paint_img(self, alpha=255,add_x=0,add_y=0) -> bool:#画像を表示するメソッド,画像がないときはFalseを返す
         if self.img == None:
             return False
         else:
@@ -469,7 +469,7 @@ class Box():
             return True
 
 
-    def hit(self):
+    def hit(self) -> bool:#マウスカーソルが四角の中にあるかを判定するメソッド
         pg.event.get()
         (mausu_x,mausu_y) = pg.mouse.get_pos()
         if self.x < mausu_x and mausu_x < self.x + self.wide:
@@ -479,7 +479,7 @@ class Box():
         return False
 
 
-    def set_rect(self,rect:pg.rect) -> bool:
+    def set_rect(self,rect:pg.rect) -> bool:#rectを変更するメソッド,たぶんそのうち他のsetメソッドも含めてtryは消す
         try:
             self.x = float(rect[0])
             self.y = float(rect[1])
@@ -493,6 +493,14 @@ class Box():
             self.wide = self.rect[2]
             self.high = self.rect[3]
             return False
+
+    def set_rect_img(self) -> bool:#四角の大きさを画像と同じにするメソッド,上手くいくかわからん
+        if self.img == None:
+            return False
+        else:
+            rec = self.img.get_rect()
+            res = self.set_rect(rec)
+            return res
 
     def set_kado(self,kado:int) -> bool:
         try:
@@ -518,14 +526,14 @@ class Box():
         except (TypeError):#範囲外なら調整の所
             return False
 
-    def set_img(self, img:pg.surface) -> bool:
+    def set_img(self, img:pg.surface) -> bool:#画像を変更するメソッド,ここのtryはいるけど完成してない
         try:
             self.img = img
             return True
         except (TypeError):
             return False
 
-    def set_imgpas(self, pas:str) -> bool:
+    def set_img_pos(self, pas:str) -> bool:
         try:
             self.img = pg.image.load(pas).convert_alpha(self.sur)
             return True
@@ -560,24 +568,24 @@ class Box():
         return self.img.get_size()
 
 
-class Card(Box):
+class Card(Box):#カードのクラス
     def __init__(self, c_no:int, rect=((CARD_X, CARD_Y), CARD_SIZE), kado=KADO_DEFO, surface=GAMENN, img=None) -> None:
         super().__init__(rect, kado, surface, img)
-        self.no = int(c_no)
-        self.movable = False
+        self.init_pos = self.rect#カードの初期位置,元の位置に戻すときに使う
+        self.no = int(c_no)#数字
+        self.movable = False#dragで動かせるかどうか
 
 
-
-    def paint(self, w_col=Iro.KURO,w2_col=Iro.KIMIDORI, alpha=255, alpha2=255, w_change=False, font=font) -> int:
-        super().paint(Iro.IRO_List[self.no%COL_LAS], alpha)
+    def paint(self, w_col=Iro.KURO,w2_col=Iro.KIMIDORI, alpha=255, alpha2=255, w_change=False, font=font) -> int:#w_change=Trueかつhit()で枠と透明度とかが2の方に変わる
+        super().paint(Iro.IRO_List[self.no%COL_LAS], alpha)#本体
         if w_change and self.hit():
             w2_coler = w2_col + (alpha2, )
-            pg.draw.rect(self.sur,w2_coler, self.rect, width=WAKU_DEFO, border_radius=KADO_DEFO)
+            pg.draw.rect(self.sur,w2_coler, self.rect, width=WAKU_DEFO, border_radius=KADO_DEFO)#枠
         else:
             w_coler = w_col + (alpha, )
-            pg.draw.rect(self.sur,w_coler, self.rect, width=WAKU_DEFO, border_radius=KADO_DEFO)
+            pg.draw.rect(self.sur,w_coler, self.rect, width=WAKU_DEFO, border_radius=KADO_DEFO)#枠
 
-        if self.no == 0:
+        if self.no == 0:#数字の表示
             text = font.render('-',True,Iro.KURO)
         elif 1 <= self.no and self.no <=MAX_NO:
             text = font.render(str(2**self.no),True,Iro.KURO)
@@ -587,21 +595,28 @@ class Card(Box):
             text = font.render('era---',True,Iro.KURO)
         self.sur.blit(text, (self.x+5,self.y+5))
 
-    def paint_img(self, alpha=255, add_x=0, add_y=0) -> bool:#これ要る？
+    def paint_img(self, alpha=255, add_x=0, add_y=0) -> bool:#画像の表示
         g_w, g_h = self.img.get_size()
-        g_w = self.high - g_w#画像とカードの表示位置の左下を合わせてる
+        g_w = self.high - g_w#画像とカードの表示位置の左下を合わせてる,もとは左上で合わせてあった
         g_h = self.wide - g_h
         result = super().paint_img(alpha, add_x, g_h+add_y)
         return result
 
-    def drag(self):
-        if self.movable and self.hit():
+    def drag(self,catch=True) -> bool:#カードをドラッグするメソッド,使い方は下の「デバッグ用」のところにある
+        res = self.hit()#memo ^- back_ground関数を渡したい <- 他のとこと相互に関連するからできればやめたい <- dragの使い方を工夫した
+        if self.movable and (res or catch):
+            #print("mo")
             mp = pg.mouse.get_pos()
-            self.x = mp[0]
-            self.y = mp[1]
-        return mp
+            x = mp[0] - self.wide/2
+            y = mp[1] - self.high/2
+            self.set_pos(x,y)
+        else:
+            pass
 
-    def move(self, pos_x:float,pos_y:float,speed=10) -> bool:#角度での分岐難しい
+        return res
+
+
+    def move(self, pos_x:float,pos_y:float,speed=10) -> bool:#カードを指定した場所までもっていくメソッド,旧idouの改良版
         if abs(pos_x -self.x) <= speed or abs(pos_y - self.y) <= speed:#近くに来たら合わせる
             self.x = pos_x
             self.y = pos_y
@@ -614,25 +629,19 @@ class Card(Box):
                 tan = ((pos_y - self.y)/(pos_x - self.x))
                 siita = math.atan(tan)#-pi/2~pi/2
             #print(siita/math.pi,"π\n")
-            if pos_x < self.x:#この時がおかしい <- なおった
+            if pos_x < self.x:#この時がおかしい <- なおした
                 speed = -speed
 
-            #if pos_y < self.y:
-                #siita = siita + math.pi
-            """
-            while siita > 2*math.pi:
-                siita = siita - 2*math.pi
-
-            while siita < 0:
-                siita = siita + 2*math.pi
-            """
             #print("rad=",siita/math.pi,"π\n")
             self.x = self.x + speed*math.cos(siita)
             self.y = self.y + speed*math.sin(siita)
             self.set_pos(self.x,self.y)
             return False
 
-    def set_no(self, no:int) -> bool:
+    def came_back(self,speed=10) -> bool:#カードを初期位置に戻すメソッド,大まかな使い方はmoveと一緒
+        return self.move(self.init_pos[0],self.init_pos[1],speed=speed)
+
+    def set_no(self, no:int) -> bool:#setシリーズ
         try:
             no = int(no)
             if no < 0 or MAX_NO < no:
@@ -643,7 +652,7 @@ class Card(Box):
         except (ValueError):
             return False
 
-    def movable_on(self)->bool:
+    def movable_on(self)->bool:#これもsetと同じだけどTrueとFalseしかないから専用のやつを作った
         self.movable = True
         return self.movable
 
@@ -651,53 +660,85 @@ class Card(Box):
         self.movable = False
         return self.movable
 
+    def set_init_pos(self,rect:pg.Rect) -> bool:
+        rect = np.array(rect)
+        rect = np.reshape(rect,(4, ))
+        self.init_pos = rect
+        return True
+
+    def get_init_pos(self) -> pg.Rect:#getシリーズ,
+        return self.init_pos
+
     def get_movable(self) -> bool:
         return self.movable
 
     def get_no(self) -> int:
         return self.no
 
-class TxtBox(Box):
+class TxtBox(Box):#文字を表示できるようになったBox
     def __init__(self, txt:str,fonnt=font, rect=((CARD_X, CARD_Y), CARD_SIZE), kado=KADO_DEFO, surface=GAMENN, img=None) -> None:
         super().__init__(rect, kado, surface, img)
-        self.txt = str(txt)
-        self.font= fonnt
+        self.txt = str(txt)#文字
+        self.font= fonnt#フォント
 
-    def paint_txt(self,col=Iro.KURO,add_x=5,add_y=5) -> str:
+    def paint_txt(self,col=Iro.KURO,add_x=5,add_y=5) -> str:#文字だけ表示
         text = font.render(self.txt,True,col)
         self.sur.blit(text, (self.x+add_x,self.y+add_y))
         return self.txt
 
-    def set_txt(self, txt:str) -> str:
+    def set_txt(self, txt:str) -> str:#setシリーズ
         old = self.txt
         self.txt = str(txt)
         return old
 
+    def set_font(self,font=font) -> None:
+        self.font = font
+
+    def get_font(self) -> pg.font:#getシリーズ
+        return self.font
+
     def get_txt(self) -> str:
         return self.txt
 
-class Bottun(TxtBox):
+class Bottun(TxtBox):#クリックとかしたら反応するボタンのクラス
     def __init__(self) -> None:
         super().__init__()
 
+    def hit(self):#ボタンを押したら押された演出をする,...予定
+        res = super().hit()
+        if res:
+            pass
+            #ボタンが押される演出、音とか動き
+        return res
 
 
 
 
 
-if __name__ == "__main__":
+if __name__ == "__main__":#デバッグ用
     GAMENN.fill(Iro.SIRO)
     a = Card(0)
     a.paint(alpha=230)
     a.set_img(pg.image.load("GameV3/gazou/migi.png"))
     a.paint_img()
+    a.movable_on()
     pg.display.update()
     break_code = False
     can = False
+    cb = False
+    drg = False
+
+    def bg_update():
+        GAMENN.fill(Iro.PINNKU)
+        a.paint(alpha=200)
+        a.paint_img(alpha=100)
+        pg.display.update()
 
     while 1:
         event = pg.event.get()
+
         if event != []:
+            bg_update()
             for ev in range(len(event)):
                 if event[ev].type == pg.QUIT:
                     fin = input("owaru?(y/n) -> ")
@@ -711,20 +752,22 @@ if __name__ == "__main__":
                     can = a.set_pos(str(10+posi[0]),str(10 +posi[1]))
                     if not can:
                         print("Sippai")
-                    GAMENN.fill(Iro.PINNKU)
-                    a.paint(alpha=200)
-                    a.paint_img(alpha=100)
-                    pg.display.update()
+                    bg_update()
+                    
 
                 elif event[ev].type == pg.MOUSEBUTTONDOWN:
-                    mp = pg.mouse.get_pos()
-                    fin = False
-                    while not fin:
-                        #print("2")
-                        fin = a.move(pos_x=mp[0],pos_y=mp[1],speed=1)
-                        GAMENN.fill(Iro.SANDBROWN)
-                        a.paint()
-                        pg.display.update()
+                    mb = pg.mouse.get_pressed()
+                    while mb[0]:
+                        drg = a.drag(drg)
+                        mb = pg.mouse.get_pressed()
+                        bg_update()
+                    else:
+                        drg = False
+                        while not drg:
+                            drg = a.came_back()
+                            bg_update()
+
+                        
 
         if break_code:
             break
