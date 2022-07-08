@@ -16,12 +16,12 @@ GAMENN = pg.display.set_mode(GAM_SIZE,pg.RESIZABLE)
 pg.display.set_caption("Normal_Mode")
 
 class CardStorage():#旧カード置き場クラス
-    def __init__(self,pos_x=CARD_X,pos_y=CARD_Y,c_max=CARD_X) -> None:
-        self.strg = [lib.Card(0,rect=((pos_x,pos_y+i*CARD_ZURE_Y),CARD_SIZE)) for i in range(c_max+1)]
+    def __init__(self,pos_x=STORAGE_X,pos_y=STORAGE_Y,c_max=C_MAX) -> None:
+        self.strg = [lib.Card(0,rect=((pos_x,pos_y+i*STORAGE_ZURE_Y),CARD_SIZE)) for i in range(c_max+1)]
         self.x = pos_x
         self.y = pos_y
-        self.w = CARD_X
-        self.h = CARD_ZURE_Y*(c_max+1) +CARD_Y
+        self.w = CARD_SIZE[0]
+        self.h = STORAGE_ZURE_Y*(c_max+1) +CARD_SIZE[1]
         self.max = c_max
 
     def z_to_m(self, num:int,Z=0,M=C_MAX) -> int:#numの値をZからMに制限する
@@ -90,7 +90,7 @@ class CardStorage():#旧カード置き場クラス
         return self.strg[num].set_no(no)
 
     
-    def reset_rect(self,rect:pg.rect):#ストレージの各カードを初期位置に戻す
+    def reset_rect(self):#ストレージの各カードを初期位置に戻す
         #self.strg = [lib.Card(0,rect=(pos_x,pos_y+i*CARD_ZURE_Y)) for i in range(c_max+1)]
         for i in range(self.max+1):
             self.strg[i].set_rect((self.x,self.y+i*CARD_ZURE_Y,CARD_SIZE))
@@ -136,7 +136,7 @@ class PlayNormal(lib.Scene):#ノーマルモードの管理クラス
         self.cards[0].movable_on()
         self.cards[1].movable_on()
                 
-        self.strgs = [CardStorage(pos_x=CARD_X+ CARD_ZURE_X*i) for i in range(OKIBA_KAZU)]
+        self.strgs = [CardStorage(pos_x=STORAGE_X+(STORAGE_ZURE_X)*i) for i in range(OKIBA_KAZU)]
         self.time = 0
         self.score = 0
         self.pose_bottun = lib.Bottun(txt="一時停止",rect=(POSE_RECT))
@@ -156,8 +156,8 @@ class PlayNormal(lib.Scene):#ノーマルモードの管理クラス
         super().back_ground()
         for strg in self.strgs:
             strg.paint()
-        for card in self.cards:
-            card.paint()
+        for i in range(len(self.cards)-1,-1,-1):
+            self.cards[i].paint()
         
 
     def noup(self,num:int) -> bool:
@@ -166,7 +166,7 @@ class PlayNormal(lib.Scene):#ノーマルモードの管理クラス
             if top > 1:
                 ue = self.strgs[num].get_no(top-1)
                 if self.strgs[num].get_no(top) == ue:
-                    pos_to = self.strgs[num].get_card(top-1)
+                    pos_to = self.strgs[num].get_rect(top-1)
                     #pos_from = self.strgs[num].get_card(top)
                     fin = False
                     while not fin:

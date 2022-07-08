@@ -7,13 +7,19 @@ import pygame as pg
 
 #定数とかを入れたファイル
 GAM_SIZE = (600,500)#最初の画面の大きさ
-CARD_X = 100#カードの位置
-CARD_Y = 40
+CARD_X = 200#カードの位置
+CARD_Y = 350
+
 CARD_SIZE = (60,120)#カードの大きさ
-KADO_DEFO = 10#角の丸み
-WAKU_DEFO = 2#枠の太さ
 CARD_ZURE_X = int(CARD_SIZE[0]/2)#カードのずれ
 CARD_ZURE_Y = int(CARD_SIZE[1]/3)
+KADO_DEFO = 10#角の丸み
+WAKU_DEFO = 2#枠の太さ
+
+STORAGE_X = 40
+STORAGE_Y = 40
+STORAGE_ZURE_X = CARD_SIZE[0]*1.5
+STORAGE_ZURE_Y = CARD_ZURE_Y
 
 SCORE_X = 480#scoreの表示位置
 SCORE_Y = 80#
