@@ -17,10 +17,10 @@ pg.display.set_caption("Lib")
 
 
 class Sound():#SEとかBGMを管理するクラス,インスタンス化して使う
-    def __init__(self,vol = 5,unit=SOUND_UNIT,sounds={}) -> None:
+    def __init__(self,volum = 5,unit=SOUND_UNIT,sounds={}) -> None:
         if not pg.mixer.get_init:#mixirが初期化されてなかったら初期化する
             pg.mixer.init
-        self.vol = vol#音量
+        self.vol = volum#音量
         self.unit = unit#音量を調整する単位
 
         self.sounds = {}#辞書型で各音と名前をセットにする
