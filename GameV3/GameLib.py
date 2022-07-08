@@ -11,7 +11,7 @@ import random
 import time
 from GameLocal import *
 
-pg.init()
+pg.init()#見える？
 GAMENN = pg.display.set_mode(GAM_SIZE,pg.RESIZABLE)
 pg.display.set_caption("Lib")
 

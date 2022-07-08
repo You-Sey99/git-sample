@@ -1,7 +1,7 @@
 # coding=[shift-jis]
 
 
-
+#上手くいくかな？
 import Iro_RGB as Iro
 import GameLib as lib
 from GameLocal import *

@@ -1,7 +1,7 @@
 # coding=[shift-jis]
 
 
-#aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+#aaaaaaaaaaaaaaaaaa
 import Iro_RGB as Iro
 import pygame as pg
 
