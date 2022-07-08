@@ -65,3 +65,7 @@ def iro_num(rgb = (0,0,0)):
     return iro
 
 #print(IRO_List[iro_last()],"==",TURQUOISE)
+
+if __name__ == "__main__":
+    print(iro_last())
+    print(len(IRO_List))

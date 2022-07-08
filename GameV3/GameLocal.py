@@ -55,7 +55,7 @@ font_KyoDaii = pg.font.SysFont("hg正楷書体pro",75)
 
 
 pg.mixer.init()
-SE_Click = pg.mixer.Sound("oto\se_maoudamashii_element_wind02.mp3")
-SE_Drag = pg.mixer.Sound("oto\ファイル名.mp3")
+SE_Click = pg.mixer.Sound("GameV3\oto\se_maoudamashii_element_wind02.mp3")#ファイルのパスの前にGameV3を入れるといい,それか相対パスのコピー
+#SE_Drag = pg.mixer.Sound("oto\ファイル名.mp3")
 
 

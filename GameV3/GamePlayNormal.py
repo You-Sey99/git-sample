@@ -2,7 +2,6 @@
 
 
 
-from GameV3.GameLib import Card
 import Iro_RGB as Iro
 import GameLib as lib
 from GameLocal import *
@@ -18,7 +17,7 @@ pg.display.set_caption("Normal_Mode")
 
 class CardStorage():#旧カード置き場クラス
     def __init__(self,pos_x=CARD_X,pos_y=CARD_Y,c_max=CARD_X) -> None:
-        self.strg = [lib.Card(0,rect=(pos_x,pos_y+i*CARD_ZURE_Y)) for i in range(c_max+1)]
+        self.strg = [lib.Card(0,rect=((pos_x,pos_y+i*CARD_ZURE_Y),CARD_SIZE)) for i in range(c_max+1)]
         self.x = pos_x
         self.y = pos_y
         self.w = CARD_X
@@ -36,12 +35,15 @@ class CardStorage():#旧カード置き場クラス
             num = M
         return num
 
-    def paint(self) -> None:
+    def paint(self,chan=False) -> None:
         for i in range(self.max):
             self.strg[i].paint()
-            if self.strg[i].get_no() == 0:
+            if self.strg[i].get_no() == 0:#0のカードを1枚表示したら終わり
                 break
-        self.strg[self.max].paint(alpha=0)
+        
+        if self.get_top() >= self.max:
+            self.strg[self.max].paint(alpha=0,alpha2=255,w_change=chan)
+
 
     def reset(self) -> list:#カードの数字を全部0にする
         strg = self.strg
@@ -51,6 +53,7 @@ class CardStorage():#旧カード置き場クラス
             s.set_pos(self.x,self.y+CARD_ZURE_Y*n)
             n+=1
         return strg
+
 
     def noup_flag(self) -> bool:#↓noupメソッドを実行するフラグにした
         #没　noupメソッドはPlayNormalに作る　こっちに作ると背面更新がいるから相互依存しちゃう
@@ -77,6 +80,8 @@ class CardStorage():#旧カード置き場クラス
             # self.okiba[i].idou(dx,dy+gk.C_ZUREY*(i-under),speed)
         return res
 
+    def hit(self,num) -> bool:
+        return self.strg[num].hit()
 
     def set_no(self, no:int, num:int) -> bool:#noが変更したい数字,numが変更する場所
         no = self.z_to_m(no,M=MAX_NO)
@@ -111,11 +116,13 @@ class CardStorage():#旧カード置き場クラス
     def get_card(self, num:int) -> lib.Card:#できれば使いたくないけど特定の場所のCardオブジェクトを返す
         return self.strg[num]
 
+    def get_max(self) -> int:
+        return self.max
 
 class PlayNormal(lib.Scene):#ノーマルモードの管理クラス
     def __init__(self, frame_size=5, bgc=BGC, clock=30, surface=GAMENN):
         super().__init__(frame_size, bgc, clock, surface)
-        self.cards = [Card(0,rect=(CARD_X-CARD_ZURE_X*i,CARD_Y)) for i in range(CARD_KAZU)]
+        self.cards = [lib.Card(0,rect=((CARD_X-CARD_ZURE_X*i,CARD_Y),CARD_SIZE)) for i in range(CARD_KAZU)]
         for i in range(CARD_KAZU):
             card_no = random.randint(RAND_MIN,RAND_MAX)
             if i == 0:
@@ -126,12 +133,15 @@ class PlayNormal(lib.Scene):#ノーマルモードの管理クラス
                     card_no = random.randint(RAND_MIN,RAND_MAX)
 
             self.cards[i].set_no(card_no)
+        self.cards[0].movable_on()
+        self.cards[1].movable_on()
                 
         self.strgs = [CardStorage(pos_x=CARD_X+ CARD_ZURE_X*i) for i in range(OKIBA_KAZU)]
         self.time = 0
         self.score = 0
+        self.pose_bottun = lib.Bottun(txt="一時停止",rect=(POSE_RECT))
 
-    def gd_lord(self,gamedata:list) -> bool:
+    def gd_lord(self,gamedata:list) -> bool:#ゲームデータクラスからデータを入れるメソッド
         for i in range(CARD_KAZU):
             self.cards[i].set_no(gamedata[0][i])
         for i in range(OKIBA_KAZU):
@@ -146,6 +156,9 @@ class PlayNormal(lib.Scene):#ノーマルモードの管理クラス
         super().back_ground()
         for strg in self.strgs:
             strg.paint()
+        for card in self.cards:
+            card.paint()
+        
 
     def noup(self,num:int) -> bool:
         if self.strgs[num].noup_flag:
@@ -154,18 +167,67 @@ class PlayNormal(lib.Scene):#ノーマルモードの管理クラス
                 ue = self.strgs[num].get_no(top-1)
                 if self.strgs[num].get_no(top) == ue:
                     pos_to = self.strgs[num].get_card(top-1)
-                    pos_from = self.strgs[num].get_card(top)
+                    #pos_from = self.strgs[num].get_card(top)
                     fin = False
                     while not fin:
                         fin = self.strgs[num].move(pos_to[0],pos_to[1],num_top=top)
+                        self.back_ground()
+                        pg.display.update()
                         
                     self.strgs[num].reset_rect()
                     self.strgs[num].set_no(0,top)
-                    self.strg[top-1].set_no(ue+1)
+                    self.strgs[num].set_no(ue+1,top-1)
+                    return True
+        return False
 
+    def put(self,num:int,c_num:int) -> bool:
+        top = self.strgs[num].get_top()
+        card_no = self.cards[c_num].get_no()
 
+        if top < self.strgs[num].get_max():
+            self.strgs[num].set_no(card_no,top+1)
+        
+        elif self.strgs[num].get_no(top) == card_no:
+            self.strgs[num].set_no(card_no,top+1)
+
+        else:
+            return False
+        
+        return True
+
+    def befor_event(self) -> None:
+        return super().befor_event()
+
+    def ev_mouse(self, event: pg.event) -> None:
+        mov = False
+        if event.type == pg.MOUSEBUTTONDOWN:
+            mouse_bottun = pg.mouse.get_pressed()
+            if mouse_bottun[0]:
+                mov_num = -1
+                for i in [0,1]:
+                    mov = self.cards[i].drag()
+                    if mov:
+                        mov_num = i
+                        break
+                    
+                while mouse_bottun[0]:
+                    mov = self.cards[mov_num].drag(mov)
+                    mouse_bottun = pg.mouse.get_pressed()
+                    self.back_ground()
+                    pg.display.update()
+
+                else:
+                    mov = False
+                    for i in range(OKIBA_KAZU):
+                        if self.strgs[i].hit(self.strgs[i].get_top()+1):
+                            self.put(i,mov_num)
+                            up = True
+                            while up:
+                                up = self.noup(i)
+                            break
 
 
 
 if __name__ == "__main__":
-    pass
+    game = PlayNormal()
+    game.main()

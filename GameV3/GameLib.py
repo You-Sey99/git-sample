@@ -2,7 +2,6 @@
 
 
 
-from pandas import bdate_range
 import Iro_RGB as Iro
 import pygame as pg
 import numpy as np
@@ -436,7 +435,7 @@ class Scene():#ゲームの各場面を管理するクラスの元,必要なメ�
 class Box():#Card,TxtBox,Bottunのもとになるクラス
     def __init__(self, rect=((CARD_X,CARD_Y),CARD_SIZE), kado=KADO_DEFO, surface=GAMENN, img=None) -> None:
         np_rect = np.array(rect)#ここと一個下の文でrectの形をそろえる
-        np_rect = np.reshape(np_rect,(4, ))
+        np_rect = np_rect.flatten()
         self.x = float(np_rect[0])
         self.y = float(np_rect[1])
         self.wide = float(np_rect[2])
