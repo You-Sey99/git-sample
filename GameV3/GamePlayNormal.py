@@ -195,6 +195,31 @@ class PlayNormal(lib.Scene):#ノーマルモードの管理クラス
         
         return True
 
+    def cards_update(self,num) -> bool:
+        self.cards[num] = self.cards[2]
+        self.cards[num].movable_on()
+
+        for i in range(2,CARD_KAZU-1):
+            self.cards[i] = self.cards[i+1]
+
+        no = self.cards[CARD_KAZU-2].get_no()
+        new_no = random.randint(RAND_MIN,RAND_MAX)
+        while no == new_no:
+            new_no = random.randint(RAND_MIN,RAND_MAX)
+        self.cards[CARD_KAZU-1] = lib.Card(new_no,rect=((10,CARD_Y),CARD_SIZE))
+
+        move = False
+        rec = self.cards[CARD_KAZU-2].get_rect()
+        while not move:
+            move = self.cards[CARD_KAZU-1].move(rec[0],rec[1],(rec[0]-10)/CARD_SIZE[0]/10)
+            self.cards[num].move(CARD_X+CARD_X*(1-num),CARD_Y)
+            for i in range(2,CARD_KAZU-1):
+                self.cards[i].move(CARD_X+CARD_ZURE_X*i,CARD_Y)
+            self.back_ground()
+            pg.display.update()
+
+        return True
+
     def befor_event(self) -> None:
         return super().befor_event()
 
@@ -205,26 +230,36 @@ class PlayNormal(lib.Scene):#ノーマルモードの管理クラス
             if mouse_bottun[0]:
                 mov_num = -1
                 for i in [0,1]:
-                    mov = self.cards[i].drag()
+                    mov = self.cards[i].hit()
                     if mov:
                         mov_num = i
                         break
-                    
+                if mov_num == -1:
+                    return 0
+
                 while mouse_bottun[0]:
                     mov = self.cards[mov_num].drag(mov)
                     mouse_bottun = pg.mouse.get_pressed()
                     self.back_ground()
                     pg.display.update()
 
-                else:
-                    mov = False
-                    for i in range(OKIBA_KAZU):
-                        if self.strgs[i].hit(self.strgs[i].get_top()+1):
-                            self.put(i,mov_num)
+                
+                mov = False
+                for i in range(OKIBA_KAZU):
+                    if self.strgs[i].hit(self.strgs[i].get_top()+1):
+                        p = self.put(i,mov_num)
+                        if p:#カードが置かれたとき
+                            self.cards_update(mov_num)
                             up = True
                             while up:
                                 up = self.noup(i)
-                            break
+                            return 1
+                        #else:
+                while not mov:#元の位置に戻す
+                                mov = self.cards[mov_num].move(CARD_X+CARD_X*(1-mov_num),CARD_Y)
+                                self.back_ground()
+                                pg.display.update()
+                return 0
 
 
 
