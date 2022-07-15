@@ -16,7 +16,7 @@ GAMENN = pg.display.set_mode(GAM_SIZE,pg.RESIZABLE)
 pg.display.set_caption("Lib")
 
 
-class Sound():#SEとかBGMを管理するクラス,インスタンス化して使う
+class Sound():#SEとかBGMを管理するクラス,インスタンス化して使う.
     def __init__(self,volum = 5,unit=SOUND_UNIT,sounds={}) -> None:
         if not pg.mixer.get_init:#mixirが初期化されてなかったら初期化する
             pg.mixer.init
@@ -26,7 +26,7 @@ class Sound():#SEとかBGMを管理するクラス,インスタンス化して�
         self.sounds = {}#辞書型で各音と名前をセットにする
         count = 0
         if isinstance(sounds,dict):#soundsが辞書型の時
-            for i in sounds.keys():#引数soundsの各要素を1つずつ取り出し
+            for i in sounds.values():#引数soundsの各要素を1つずつ取り出し
                 if isinstance(sounds[i],pg.mixer.Sound):#Soundオブジェクトを渡してきたとき
                     self.sounds[i] = sounds[i]
                     self.sounds[i].set_volume(self.unit*self.vol)
@@ -144,6 +144,7 @@ class Sound():#SEとかBGMを管理するクラス,インスタンス化して�
 
     def get_unit(self) -> float:
         return self.unit
+
                 
 class GameData():#ゲームデータのやり取りをするクラス,あったら便利だと思ったから作った
     def __init__(self,card_no=[0 for i in range(CARD_KAZU)],okiba_no=[[0 for i in range(C_MAX)] for j in range(OKIBA_KAZU)],time=float(0),score=0) -> None:
@@ -360,6 +361,7 @@ class Scene():#ゲームの各場面を管理するクラスの元,必要なメ�
         self.clock_time = clock
         self.bgc = bgc
         self.frame_size = frame_size
+#kokomade
 
     def main(self) -> int:#メインループ,
         res = ROOP_CODE#これを追加した
@@ -616,7 +618,7 @@ class Card(Box):#カードのクラス
         result = super().paint_img(alpha, add_x, g_h+add_y)
         return result
 
-    def drag(self,catch=False) -> bool:#カードをドラッグするメソッド,使い方は下の「デバッグ用」のところにある
+    def drag(self,catch=True) -> bool:#カードをドラッグするメソッド,使い方は下の「デバッグ用」のところにある
         res = self.hit()#memo ^- back_ground関数を渡したい <- 他のとこと相互に関連するからできればやめたい <- dragの使い方を工夫した
         if self.movable and (res or catch):
             #print("mo")
