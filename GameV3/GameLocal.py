@@ -12,7 +12,7 @@ CARD_Y = 350
 
 CARD_SIZE = (60,120)#カードの大きさ
 CARD_ZURE_X = int(CARD_SIZE[0]/2)#カードのずれ
-CARD_ZURE_Y = int(CARD_SIZE[1]/3)
+CARD_ZURE_Y = int(CARD_SIZE[1]/4)
 KADO_DEFO = 10#角の丸み
 WAKU_DEFO = 2#枠の太さ
 
@@ -50,6 +50,8 @@ SOUND_UNIT = 0.1#soundクラスの音量調整の単位
 BG_UNIT = SOUND_UNIT#
 SE_UNIT = SOUND_UNIT#
 
+ROOP_CODE = None#Sceneクラスのmainメソッドでリターンしない数字,ev_とかでまだ繰り返したいときはこれをリターンする
+
 
 pg.init()
 font = pg.font.SysFont(None,30)#(フォント、フォントサイズ),必要なのがあったら追加
@@ -61,7 +63,11 @@ font_KyoDaii = pg.font.SysFont("hg正楷書体pro",75)
 
 
 pg.mixer.init()
-SE_Click = pg.mixer.Sound("GameV3\oto\se_maoudamashii_element_wind02.mp3")#ファイルのパスの前にGameV3を入れるといい,それか相対パスのコピー
+#SE_Click = pg.mixer.Sound("GameV3\oto\se_maoudamashii_element_wind02.mp3")#ファイルのパスの前にGameV3を入れるといい,それか相対パスのコピー
 #SE_Drag = pg.mixer.Sound("oto\ファイル名.mp3")
 
+
+if __name__ == "__main__":
+    import math
+    print(math.acos(0.2)/math.pi)
 

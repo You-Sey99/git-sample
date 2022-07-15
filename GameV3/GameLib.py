@@ -361,69 +361,77 @@ class Scene():#ゲームの各場面を管理するクラスの元,必要なメ�
         self.bgc = bgc
         self.frame_size = frame_size
 
-    def main(self) -> None:#メインループ,
+    def main(self) -> int:#メインループ,
+        res = ROOP_CODE
         while 1:
             self.clock.tick(self.clock_time)
+            
+
             mo_pos = pg.mouse.get_pos()
             self.disp_w, self.disp_h = self.surface.get_size()
             if (mo_pos[0] < self.frame_size or self.disp_w + self.frame_size < mo_pos[0]) or (mo_pos[1] < self.frame_size or self.disp_h + self.frame_size < mo_pos[1]):
-                self.window_out()
+                res = self.window_out()
+                continue
             self.befor_event()
             event = pg.event.get()
             if event != []:
                 for ev in event:
-                    self.ev_befor(ev)
+                    res = self.ev_befor(ev)
                     self.back_ground()
                     pg.display.update()
                     if ev.type == pg.QUIT:
-                        self.ev_quit(ev)
+                        res = self.ev_quit(ev)
                     elif ev.type == pg.MOUSEBUTTONDOWN or ev.type == pg.MOUSEBUTTONUP or ev.type == pg.MOUSEWHEEL or ev.type == pg.MOUSEMOTION:
-                        self.ev_mouse(ev)
+                        res = self.ev_mouse(ev)
                     elif ev.type == pg.KEYDOWN or ev.type == pg.KEYUP:
-                        self.ev_key(ev)
+                        res = self.ev_key(ev)
                     elif ev.type == pg.WINDOWENTER or ev.type == pg.WINDOWLEAVE or ev.type == pg.WINDOWFOCUSLOST or ev.type == pg.WINDOWCLOSE:
-                        self.ev_window(ev)
+                        res = self.ev_window(ev)
                     else:
-                        self.ev_other(ev)
-                    self.ev_after
+                        res = self.ev_other(ev)
+                    self.ev_after(ev)
+                    if res != ROOP_CODE:
+                        print(res)
+                        return res
 
             else:
                 self.back_ground()
                 pg.display.update()
-                self.ev_no_event()
+                res = self.ev_no_event()
 
 
-    def befor_event(self) -> None:#イベント取得前にやること
-        pass
+    def befor_event(self) -> int:#イベント取得前にやること
+        return ROOP_CODE
 
-    def window_out(self) -> None:#マウスカーソルが指定範囲外に出たときにやること
-        pass
+    def window_out(self) -> int:#マウスカーソルが指定範囲外に出たときにやること
+        return ROOP_CODE
 
     #ev_シリーズは各イベントを処理するメソッド,主にこれをオーバーライドする
-    def ev_befor(self, event:pg.event) -> None:#イベントを処理する前に毎回やること
-        pass
+    def ev_befor(self, event:pg.event) -> int:#イベントを処理する前に毎回やること
+        return ROOP_CODE
 
-    def ev_quit(self,event:pg.event) -> None:#右上の×を押したときのやつ
+    def ev_quit(self,event:pg.event) -> int:#右上の×を押したときのやつ
         if event.type == pg.QUIT:
             sys.exit()
+            return ROOP_CODE
 
-    def ev_mouse(self,event:pg.event) -> None:#マウス関連のイベント
-        pass
+    def ev_mouse(self,event:pg.event) -> int:#マウス関連のイベント
+        return ROOP_CODE
 
-    def ev_key(self,event:pg.event) -> None:#キーボードが押されたor放した時のイベント
-        pass
+    def ev_key(self,event:pg.event) -> int:#キーボードが押されたor放した時のイベント
+        return ROOP_CODE
 
-    def ev_window(self, event:pg.event) -> None:#画面から出たり,画面に入ったりした時のイベント,たぶん使わん
-        pass
+    def ev_window(self, event:pg.event) -> int:#画面から出たり,画面に入ったりした時のイベント,たぶん使わん
+        return ROOP_CODE
 
-    def ev_no_event(self) -> None:#イベントが何もなかった時にやるイベント
-        pass
+    def ev_no_event(self) -> int:#イベントが何もなかった時にやるイベント
+        return ROOP_CODE
 
-    def ev_other(self, event:pg.event) -> None:#上に描かれてないイベントが起こったときのイベント
-        pass
+    def ev_other(self, event:pg.event) -> int:#上に描かれてないイベントが起こったときのイベント
+        return ROOP_CODE
 
-    def ev_after(self, event:pg.event) -> None:#イベントを処理した後に毎回やること
-        pass
+    def ev_after(self, event:pg.event) -> int:#イベントを処理した後に毎回やること
+        return ROOP_CODE
 
     def back_ground(self) -> None:#背景の更新,デフォルトで背景の塗りつぶしと外枠の(サイズ変更+表示)をする
         #display.updateをここに入れると追加でカードとかを表示するときにチカチカするから別にしとく
@@ -514,10 +522,15 @@ class Box():#Card,TxtBox,Bottunのもとになるクラス
         try:
             self.x = float(x)#キャスト
             self.y = float(y)#
+            ws = self.sur.get_size()
             if self.x<0:#範囲外なら調整
                 self.x=0
+            elif self.x+self.wide > ws[0]:
+                self.x = ws[0]-self.wide
             if self.y<0:#
                 self.y=0
+            elif self.y+self.high > ws[1]:
+                self.y = ws[1]-self.high
             self.rect = (self.x, self.y, self.wide, self.high)
             return True
         except (ValueError):#キャストするとこ

@@ -122,7 +122,7 @@ class CardStorage():#旧カード置き場クラス
 class PlayNormal(lib.Scene):#ノーマルモードの管理クラス
     def __init__(self, frame_size=5, bgc=BGC, clock=30, surface=GAMENN):
         super().__init__(frame_size, bgc, clock, surface)
-        self.cards = [lib.Card(0,rect=((CARD_X-CARD_ZURE_X*i,CARD_Y),CARD_SIZE)) for i in range(CARD_KAZU)]
+        self.cards = [lib.Card(0,rect=((CARD_X-CARD_ZURE_X*(i-1),CARD_Y),CARD_SIZE)) for i in range(CARD_KAZU)]
         for i in range(CARD_KAZU):
             card_no = random.randint(RAND_MIN,RAND_MAX)
             if i == 0:
@@ -139,7 +139,9 @@ class PlayNormal(lib.Scene):#ノーマルモードの管理クラス
         self.strgs = [CardStorage(pos_x=STORAGE_X+(STORAGE_ZURE_X)*i) for i in range(OKIBA_KAZU)]
         self.time = 0
         self.score = 0
+
         self.pose_bottun = lib.Bottun(txt="一時停止",rect=(POSE_RECT))
+        #self.gd = lib.GameData()
 
     def gd_lord(self,gamedata:list) -> bool:#ゲームデータクラスからデータを入れるメソッド
         for i in range(CARD_KAZU):
@@ -151,6 +153,10 @@ class PlayNormal(lib.Scene):#ノーマルモードの管理クラス
                     break
         self.time = gamedata[2]
         self.score = gamedata[3]
+        return True
+
+    def get_gd(self) -> lib.GameData:
+        return lib.GameData((self.cards[i].get_no() for i in range(CARD_KAZU)),((self.strgs[i].get_no(j) for j in range(self.strgs[i].get_max())) for i in range(OKIBA_KAZU)),self.time,self.score)
 
     def back_ground(self) -> None:
         super().back_ground()
@@ -220,24 +226,35 @@ class PlayNormal(lib.Scene):#ノーマルモードの管理クラス
 
         return True
 
-    def befor_event(self) -> None:
-        return super().befor_event()
+    def befor_event(self) -> int:
+        res = super().befor_event()
+        return res
 
-    def ev_mouse(self, event: pg.event) -> None:
+    def ev_mouse(self, event: pg.event) -> int:
         mov = False
         if event.type == pg.MOUSEBUTTONDOWN:
             mouse_bottun = pg.mouse.get_pressed()
             if mouse_bottun[0]:
                 mov_num = -1
+                if self.pose_bottun.hit():
+                    return 1
                 for i in [0,1]:
                     mov = self.cards[i].hit()
                     if mov:
                         mov_num = i
                         break
                 if mov_num == -1:
-                    return 0
+                    return ROOP_CODE
 
-                while mouse_bottun[0]:
+                while mouse_bottun[0]:#ドラッグしてる間
+                    mpos = pg.mouse.get_pos()
+                    #dsize = self.surface.get_size()
+                    if not(0 <mpos[0]< self.disp_w-CARD_SIZE[0]) or not(0 <mpos[1]< self.disp_h-CARD_SIZE[1]):
+                        while mov:
+                            mov = self.cards[mov_num].came_back()
+                            self.back_ground()
+                            pg.display.update()
+                        return ROOP_CODE
                     mov = self.cards[mov_num].drag(mov)
                     mouse_bottun = pg.mouse.get_pressed()
                     self.back_ground()
@@ -253,16 +270,16 @@ class PlayNormal(lib.Scene):#ノーマルモードの管理クラス
                             up = True
                             while up:
                                 up = self.noup(i)
-                            return 1
+                            return ROOP_CODE
                         #else:
                 while not mov:#元の位置に戻す
                                 mov = self.cards[mov_num].move(CARD_X+CARD_X*(1-mov_num),CARD_Y)
                                 self.back_ground()
                                 pg.display.update()
-                return 0
+                return ROOP_CODE
 
 
 
 if __name__ == "__main__":
     game = PlayNormal()
-    game.main()
+    print(game.main(),"a")
