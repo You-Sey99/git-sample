@@ -12,7 +12,7 @@ CARD_Y = 350
 
 CARD_SIZE = (60,120)#カードの大きさ
 CARD_ZURE_X = int(CARD_SIZE[0]/2)#カードのずれ
-CARD_ZURE_Y = int(CARD_SIZE[1]/4)
+CARD_ZURE_Y = int(CARD_SIZE[1]/6)
 KADO_DEFO = 10#角の丸み
 WAKU_DEFO = 2#枠の太さ
 
@@ -70,5 +70,13 @@ pg.mixer.init()
 
 if __name__ == "__main__":
     import math
-    print(math.acos(0.2)/math.pi)
+    import numpy as np
+    #print(math.acos(0.2)/math.pi)
+
+    rect = (CARD_X,CARD_Y,(CARD_SIZE))
+    np_rect = rect
+    for i in range(len(rect)):
+        np_rect[i] = list(rect[i])
+    np_rect = np.array(rect)#ここと一個下の文でrectの形をそろえる
+    rect = np_rect.flatten()
 

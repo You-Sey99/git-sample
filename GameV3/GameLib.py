@@ -364,42 +364,46 @@ class Scene():#ゲームの各場面を管理するクラスの元,必要なメ�
 #kokomade
 
     def main(self) -> int:#メインループ,
-        res = ROOP_CODE#これを追加した
+        resu = ROOP_CODE#これを追加した
+        self.back_ground()
+        pg.display.update()
         while 1:
             self.clock.tick(self.clock_time)
             
 
-            mo_pos = pg.mouse.get_pos()
+            mo_pos = pg.mouse.get_pos()#マウスカーソルがsurfaceの上にないと止まる
             self.disp_w, self.disp_h = self.surface.get_size()
             if (mo_pos[0] < self.frame_size or self.disp_w + self.frame_size < mo_pos[0]) or (mo_pos[1] < self.frame_size or self.disp_h + self.frame_size < mo_pos[1]):
-                res = self.window_out()
-                continue
+                self.window_out()
+                #continue
             self.befor_event()
             event = pg.event.get()
             if event != []:
                 for ev in event:
-                    res = self.ev_befor(ev)
+                    resu = self.ev_befor(ev)
                     self.back_ground()
                     pg.display.update()
                     if ev.type == pg.QUIT:
-                        res = self.ev_quit(ev)
+                        resu = self.ev_quit(ev)
                     elif ev.type == pg.MOUSEBUTTONDOWN or ev.type == pg.MOUSEBUTTONUP or ev.type == pg.MOUSEWHEEL or ev.type == pg.MOUSEMOTION:
-                        res = self.ev_mouse(ev)
+                        resu = self.ev_mouse(ev)
                     elif ev.type == pg.KEYDOWN or ev.type == pg.KEYUP:
-                        res = self.ev_key(ev)
+                        resu = self.ev_key(ev)
                     elif ev.type == pg.WINDOWENTER or ev.type == pg.WINDOWLEAVE or ev.type == pg.WINDOWFOCUSLOST or ev.type == pg.WINDOWCLOSE:
-                        res = self.ev_window(ev)
+                        resu = self.ev_window(ev)
                     else:
-                        res = self.ev_other(ev)
+                        resu = self.ev_other(ev)
                     self.ev_after(ev)
-                    if res != ROOP_CODE:
-                        print(res)
-                        return res
+
+                    print("R=",ROOP_CODE,", r=",resu)
+                    if resu != ROOP_CODE:
+                        print(resu,"ppp")
+                        return resu
 
             else:
                 self.back_ground()
                 pg.display.update()
-                res = self.ev_no_event()
+                self.ev_no_event()
 
 
     def befor_event(self) -> int:#イベント取得前にやること
@@ -414,7 +418,7 @@ class Scene():#ゲームの各場面を管理するクラスの元,必要なメ�
 
     def ev_quit(self,event:pg.event) -> int:#右上の×を押したときのやつ
         if event.type == pg.QUIT:
-            sys.exit()
+            #sys.exit()
             return ROOP_CODE
 
     def ev_mouse(self,event:pg.event) -> int:#マウス関連のイベント
@@ -491,19 +495,17 @@ class Box():#Card,TxtBox,Bottunのもとになるクラス
 
 
     def set_rect(self,rect:pg.rect) -> bool:#rectを変更するメソッド,たぶんそのうち他のsetメソッドも含めてtryは消す
-        try:
-            self.x = float(rect[0])
-            self.y = float(rect[1])
-            self.wide = float(rect[2])
-            self.high = float(rect[3])
-            self.rect = (self.x, self.y, self.wide, self.high)
-            return True
-        except (ValueError,IndexError):
-            self.x = self.rect[0]
-            self.y = self.rect[1]
-            self.wide = self.rect[2]
-            self.high = self.rect[3]
-            return False
+        #np_rect = rect
+        np_rect = np.array(rect)#ここと一個下の文でrectの形をそろえる
+        rect = np_rect.flatten()
+        #rect = pg.Rect(rect)
+        self.x = float(rect[0])
+        self.y = float(rect[1])
+        self.wide = float(rect[2])
+        self.high = float(rect[3])
+        self.rect = (self.x, self.y, self.wide, self.high)
+        return True
+
 
     def set_rect_img(self) -> bool:#四角の大きさを画像と同じにするメソッド,上手くいくかわからん
         if self.img == None:
