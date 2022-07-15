@@ -250,7 +250,7 @@ class PlayNormal(lib.Scene):#ノーマルモードの管理クラス
                     mpos = pg.mouse.get_pos()
                     #dsize = self.surface.get_size()
                     if not(0 <mpos[0]< self.disp_w-CARD_SIZE[0]) or not(0 <mpos[1]< self.disp_h-CARD_SIZE[1]):
-                        while mov:
+                        while mov:#問題点、ここで止まる
                             mov = self.cards[mov_num].came_back()
                             self.back_ground()
                             pg.display.update()

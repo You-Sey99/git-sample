@@ -362,7 +362,7 @@ class Scene():#ゲームの各場面を管理するクラスの元,必要なメ�
         self.frame_size = frame_size
 
     def main(self) -> int:#メインループ,
-        res = ROOP_CODE
+        res = ROOP_CODE#これを追加した
         while 1:
             self.clock.tick(self.clock_time)
             
