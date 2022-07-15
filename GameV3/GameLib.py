@@ -729,7 +729,7 @@ class Bottun(TxtBox):#クリックとかしたら反応するボタンのクラ�
 
 
 
-
+#kokomade_0715
 
 if __name__ == "__main__":#デバッグ用
     GAMENN.fill(Iro.SIRO)
