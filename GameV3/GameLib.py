@@ -632,7 +632,7 @@ class Card(Box):#カードのクラス
 
 
     def move(self, pos_x:float,pos_y:float,speed=10) -> bool:#カードを指定した場所までもっていくメソッド,旧idouの改良版
-        print(abs(pos_y - self.y),"\nself=",self.y,"\npos=",pos_y,"\n")
+        #print(abs(pos_y - self.y),"\nself=",self.y,"\npos=",pos_y,"\n")
         if abs(pos_x -self.x) <= speed*2 and abs(pos_y - self.y) <= speed*2:#近くに来たら合わせる
             self.x = pos_x
             self.y = pos_y

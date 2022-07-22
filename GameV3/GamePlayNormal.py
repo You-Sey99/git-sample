@@ -55,7 +55,10 @@ class CardStorage():#旧カード置き場クラス
     def paint(self,chan=False) -> None:
         #"""
         for i in range(self.max):
-            self.strg[i].paint()
+            self.strg[i].paint(w_change=chan,w2_col=Iro.AO)
+            if self.strg[i].hit():
+                chan = False
+            #print(i)
             if self.strg[i].get_no() == 0:#0のカードを1枚表示したら終わり
                 break
         """
@@ -64,8 +67,11 @@ class CardStorage():#旧カード置き場クラス
             self.strg[i].paint()
         self.strg[top+1].paint(w_change=True)#"""
         
-        if self.get_top() >= self.max:
-            self.strg[self.max].paint(alpha=0,alpha2=255,w_change=chan)
+        #if self.get_top() >= self.max:
+            #self.strg[self.max].paint(alpha=10,alpha2=255,w_change=chan)
+
+    def paint_one(self,num, w_col=Iro.KURO,w2_col=Iro.KIMIDORI, alpha=255, alpha2=255, w_change=False, font=font) -> int:
+        return self.strg[num].paint(w_col=w_col,w2_col=w2_col, alpha=alpha, alpha2=alpha2, w_change=w_change, font=font)
 
 
     def reset(self) -> list:#カードの数字を全部0にする
@@ -87,6 +93,9 @@ class CardStorage():#旧カード置き場クラス
             if self.strg[top].get_no() == self.strg[top-1].get_no():
                 return True
             else:
+                if top == self.max-1:#top==8
+                    if self.strg[top].get_no() == self.strg[top+1].get_no():#[8]==[9]
+                        return True
                 return False
 
     
@@ -164,6 +173,7 @@ class PlayNormal(lib.Scene):#ノーマルモードの管理クラス
         self.strgs = [CardStorage(pos_x=STORAGE_X+(STORAGE_ZURE_X)*i) for i in range(OKIBA_KAZU)]#strage*4
 
         self.bonus = False#2048ができてるかどうか
+        self.bonus_strg = -1
 
         self.time = 0#時間を入れとくやつ
         self.time_pose = 0
@@ -194,14 +204,12 @@ class PlayNormal(lib.Scene):#ノーマルモードの管理クラス
     def get_gd(self) -> lib.GameData:
         return lib.GameData((self.cards[i].get_no() for i in range(CARD_KAZU)),((self.strgs[i].get_no(j) for j in range(self.strgs[i].get_max())) for i in range(OKIBA_KAZU)),self.time,self.score)
 
-    def back_ground(self,) -> None:
+    def back_ground(self,have=False) -> None:
         super().back_ground()
 
         self.time = ((time.time()-self.time_st)//0.1)/10 + self.time_pose#今-開始 +前回セーブした分
-        if self.time >= 100000000:
+        if self.time >= 100000000:#桁の制限
             self.time = 99999999
-        #zikann_now = zikann_now//100#小数点第一位まで表示するようにしている
-        #zikann_now = zikann_now/10#
 
         tb_pos = self.time_t.get_rect()#スコアとかの位置調整
         n_posx = self.disp_w - (TIME_X + tb_pos[2])
@@ -223,19 +231,33 @@ class PlayNormal(lib.Scene):#ノーマルモードの管理クラス
         self.pose_bottun.paint(Iro.AOMURASAKI)
         self.pose_bottun.paint_txt(add_y=10)
 
-        for strg in self.strgs:
-            strg.paint(True)
-        for i in range(len(self.cards)-1,-1,-1):
+        for strg in self.strgs:#strgの表示
+            top = strg.get_top()
+            mx = strg.get_max()
+            
+            strg.paint()#chan=self.bonus)
+            if top+1 < mx:
+                strg.paint_one(strg.get_top()+1,alpha=0,alpha2=0,w_change=have)
+            elif strg.get_no(top) in (self.cards[0].get_no(),self.cards[1].get_no()):
+                strg.paint_one(strg.get_top()+1,alpha=100,alpha2=100,w_change=have)
+
+        for i in range(len(self.cards)-1,-1,-1):#cardの表示
             self.cards[i].paint(w_change=self.cards[i].get_movable())
+
+        if self.bonus:
+            self.bonus_move()
         
 
     def noup(self,num:int) -> bool:#バグったw   num==stragの番号, strageのカードの数字を上げるメソッド,上がったらTrue
         if self.strgs[num].noup_flag():#Cardの数字が同じとき
             top = self.strgs[num].get_top()#一番上
+
+            if self.strgs[num].get_no(top+1) != 0:
+                top += 1
             ue_no = self.strgs[num].get_no(top-1)#一番上の一個下の番号
             pos_to = self.strgs[num].get_rect(top-1)#演出の準備
             #print(top)
-            pos_from = self.strgs[num].get_rect(top)
+            #pos_from = self.strgs[num].get_rect(top)
             fin = False
             while not fin:#演出,self.yはpos_to[1]に近づいてるのにabs(pos_y-self.y)は大きくなってる
                 fin = self.strgs[num].move(pos_to[0],pos_to[1],num_top=top,speed=3)
@@ -249,10 +271,10 @@ class PlayNormal(lib.Scene):#ノーマルモードの管理クラス
         return False
 
     def put(self,num:int,c_num:int) -> bool:#num==stragの番号,c_num=cardの番号 cardが置ける時に置いてTrue
-        top = self.strgs[num].get_top()
+        top = self.strgs[num].get_top()#-1~8
         card_no = self.cards[c_num].get_no()
 
-        if top < self.strgs[num].get_max():#カード枚数が最大値より小さいとき
+        if top+1 < self.strgs[num].get_max():#カード枚数が最大値より小さいとき
             self.strgs[num].set_no(card_no,top+1)
         
         elif self.strgs[num].get_no(top) == card_no:#最大値だけど数値が同じとき
@@ -295,6 +317,17 @@ class PlayNormal(lib.Scene):#ノーマルモードの管理クラス
 
         return True
 
+    def bonus_move(self) -> list:#2048を作ったボーナス
+        for i in range(OKIBA_KAZU):
+            top = self.strgs[i].get_top()
+            for j in range(top,-1,-1):
+                if self.strgs[i].hit(j):
+                    rec = self.strgs[i].get_rect(j)
+                    pg.draw.rect(self.surface,Iro.AO,(rec[0] -5,rec[1],rec[2] +5+5,STORAGE_ZURE_Y*(top-j+1) +rec[3] +5),2)#ここの+5はなくてもいいかも
+                    return [i,j]
+
+
+
     def befor_event(self) -> int:
         super().befor_event()
         caunt = 0
@@ -310,12 +343,17 @@ class PlayNormal(lib.Scene):#ノーマルモードの管理クラス
 
     def ev_after(self, event: pg.event) -> int:
         super().ev_after(event)
+        #print(self.strgs[0].get_no(0))
         for i in range(OKIBA_KAZU):
             top = self.strgs[i].get_top()
-            for j in range(top):
-                if self.strgs[i].get_no(j) > 11:
+            for j in range(top+1):
+                if self.strgs[i].get_no(j) > 10:
+                    #print("aaaaaaa")
                     self.strgs[i].reset()
                     self.bonus = True
+                    self.bonus_strg = i
+                    break
+        return ROOP_CODE
 
     def ev_no_event(self) -> int:
         super().ev_no_event()
@@ -326,13 +364,34 @@ class PlayNormal(lib.Scene):#ノーマルモードの管理クラス
         if event.type == pg.MOUSEBUTTONDOWN:
             mouse_bottun = pg.mouse.get_pressed()
             if mouse_bottun[0]:
+                if self.bonus:#ボーナス処理
+                    bou = self.bonus_move()
+                    self.bonus = False
+                    btop = self.strgs[bou[0]].get_top()
+                    
+                    looop = False
+                    pos_to = self.strgs[self.bonus_strg].get_rect(0)
+                    while not looop:
+                        self.back_ground()
+                        looop = self.strgs[bou[0]].move(pos_x=pos_to[0],pos_y=pos_to[1],speed=8,num_bottom=bou[1],num_top=btop)
+                        pg.display.update()
+                    self.strgs[bou[0]].reset_rect()
+                    self.back_ground()
+                    pg.display.update()
+                    
+                    for i in range(btop-bou[1]+1):
+                        self.strgs[self.bonus_strg].set_no(self.strgs[bou[0]].get_no(bou[1]+i),i)
+                        self.strgs[bou[0]].set_no(0,bou[1]+i)
+                    return ROOP_CODE
+
                 mov_num = -1
-                if self.pose_bottun.hit():
+                if self.pose_bottun.hit():#pose
                     return 1
                 for i in [0,1]:
                     mov = self.cards[i].hit()
                     if mov:
                         mov_num = i
+                        self.bonus = False
                         break
                 if mov_num == -1:
                     return ROOP_CODE
@@ -351,7 +410,7 @@ class PlayNormal(lib.Scene):#ノーマルモードの管理クラス
                         return ROOP_CODE#"""
                     mov = self.cards[mov_num].drag(mov)
                     mouse_bottun = pg.mouse.get_pressed()
-                    self.back_ground()
+                    self.back_ground(have=True)
                     pg.display.update()
 
                 
@@ -360,13 +419,14 @@ class PlayNormal(lib.Scene):#ノーマルモードの管理クラス
                     if self.strgs[i].hit(self.strgs[i].get_top()+1):
                         p = self.put(i,mov_num)
                         if p:#カードが置かれたとき
-                            self.cards_update(mov_num)
+                            #self.cards_update(mov_num)
                             up = True
                             count=0
                             while up:
                                 up = self.noup(i)
                                 count +=1
                             self.score += (2**self.strgs[i].get_no(self.strgs[i].get_top()))*(count-1)
+                            self.cards_update(mov_num)
                             return ROOP_CODE
                         #else:
                 while not mov:#元の位置に戻す
@@ -379,6 +439,8 @@ class PlayNormal(lib.Scene):#ノーマルモードの管理クラス
 
 if __name__ == "__main__":
     game = PlayNormal()
+    #for i in range(9):
+        #game.strgs[0].strg[i].set_no(10-i,)
     res = ROOP_CODE
     while res == ROOP_CODE:
         res = game.main()
