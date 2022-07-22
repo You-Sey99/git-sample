@@ -395,9 +395,9 @@ class Scene():#ゲームの各場面を管理するクラスの元,必要なメ�
                         resu = self.ev_other(ev)
                     self.ev_after(ev)
 
-                    print("R=",ROOP_CODE,", r=",resu)
+                    #print("R=",ROOP_CODE,", r=",resu)#デバッグ用,後で消す,コメントアウトでprintは大体デバッグ用
                     if resu != ROOP_CODE:
-                        print(resu,"ppp")
+                        #print(resu,"ppp")
                         return resu
 
             else:
@@ -476,7 +476,7 @@ class Box():#Card,TxtBox,Bottunのもとになるクラス
         pg.draw.rect(self.sur, coler, self.rect, border_radius=self.kado)
 
     def paint_img(self, alpha=255,add_x=0,add_y=0) -> bool:#画像を表示するメソッド,画像がないときはFalseを返す
-        if self.img == None:
+        if self.img is None:
             return False
         else:
             self.img.set_alpha(alpha)
@@ -523,26 +523,21 @@ class Box():#Card,TxtBox,Bottunのもとになるクラス
             return False
 
     def set_pos(self, x:float,y:float) -> bool:
-        try:
-            self.x = float(x)#キャスト
-            self.y = float(y)#
-            ws = self.sur.get_size()
-            if self.x<0:#範囲外なら調整
-                self.x=0
-            elif self.x+self.wide > ws[0]:
-                self.x = ws[0]-self.wide
-            if self.y<0:#
-                self.y=0
-            elif self.y+self.high > ws[1]:
-                self.y = ws[1]-self.high
-            self.rect = (self.x, self.y, self.wide, self.high)
-            return True
-        except (ValueError):#キャストするとこ
-            self.x = self.rect[0]
-            self.y = self.rect[1]
-            return False
-        except (TypeError):#範囲外なら調整の所
-            return False
+        self.x = float(x)#キャスト
+        self.y = float(y)#
+        """
+        ws = self.sur.get_size()
+        if self.x<0:#範囲外なら調整
+            self.x=0
+        elif self.x+self.wide > ws[0]:
+            self.x = ws[0]-self.wide
+        if self.y<0:#
+            self.y=0
+        elif self.y+self.high > ws[1]:
+            self.y = ws[1]-self.high#"""
+        self.rect = (self.x, self.y, self.wide, self.high)
+        return True
+
 
     def set_img(self, img:pg.surface) -> bool:#画像を変更するメソッド,ここのtryはいるけど完成してない
         try:
@@ -551,7 +546,7 @@ class Box():#Card,TxtBox,Bottunのもとになるクラス
         except (TypeError):
             return False
 
-    def set_img_pos(self, pas:str) -> bool:
+    def set_img_pas(self, pas:str) -> bool:
         try:
             self.img = pg.image.load(pas).convert_alpha(self.sur)
             return True
@@ -614,6 +609,8 @@ class Card(Box):#カードのクラス
         self.sur.blit(text, (self.x+5,self.y+5))
 
     def paint_img(self, alpha=255, add_x=0, add_y=0) -> bool:#画像の表示
+        if self.img is None:
+            return False
         g_w, g_h = self.img.get_size()
         g_w = self.high - g_w#画像とカードの表示位置の左下を合わせてる,もとは左上で合わせてあった
         g_h = self.wide - g_h
@@ -635,14 +632,15 @@ class Card(Box):#カードのクラス
 
 
     def move(self, pos_x:float,pos_y:float,speed=10) -> bool:#カードを指定した場所までもっていくメソッド,旧idouの改良版
-        if abs(pos_x -self.x) <= speed or abs(pos_y - self.y) <= speed:#近くに来たら合わせる
+        print(abs(pos_y - self.y),"\nself=",self.y,"\npos=",pos_y,"\n")
+        if abs(pos_x -self.x) <= speed*2 and abs(pos_y - self.y) <= speed*2:#近くに来たら合わせる
             self.x = pos_x
             self.y = pos_y
             self.set_pos(self.x,self.y)
             return True
         else:#どんな角度でも同じ速さで動く.はず
             if pos_x == self.x:
-                siita = math.radians(90)
+                siita = math.radians(-90)
             else:
                 tan = ((pos_y - self.y)/(pos_x - self.x))
                 siita = math.atan(tan)#-pi/2~pi/2
@@ -694,13 +692,13 @@ class Card(Box):#カードのクラス
         return self.no
 
 class TxtBox(Box):#文字を表示できるようになったBox
-    def __init__(self, txt:str,fonnt=font, rect=((CARD_X, CARD_Y), CARD_SIZE), kado=KADO_DEFO, surface=GAMENN, img=None) -> None:
+    def __init__(self, txt:str,fonnt=font2, rect=((0, 0), TBOX_SIZE), kado=KADO_DEFO, surface=GAMENN, img=None) -> None:
         super().__init__(rect, kado, surface, img)
         self.txt = str(txt)#文字
         self.font= fonnt#フォント
 
     def paint_txt(self,col=Iro.KURO,add_x=5,add_y=5) -> str:#文字だけ表示
-        text = font.render(self.txt,True,col)
+        text = self.font.render(self.txt,True,col)
         self.sur.blit(text, (self.x+add_x,self.y+add_y))
         return self.txt
 
@@ -709,7 +707,7 @@ class TxtBox(Box):#文字を表示できるようになったBox
         self.txt = str(txt)
         return old
 
-    def set_font(self,font=font) -> None:
+    def set_font(self,font=font2) -> None:
         self.font = font
 
     def get_font(self) -> pg.font:#getシリーズ
@@ -719,7 +717,7 @@ class TxtBox(Box):#文字を表示できるようになったBox
         return self.txt
 
 class Bottun(TxtBox):#クリックとかしたら反応するボタンのクラス
-    def __init__(self, txt: str, fonnt=font, rect=((CARD_X, CARD_Y), CARD_SIZE), kado=KADO_DEFO, surface=GAMENN, img=None) -> None:
+    def __init__(self, txt: str, fonnt=font2, rect=((0, 0), TBOX_SIZE), kado=KADO_DEFO, surface=GAMENN, img=None) -> None:
         super().__init__(txt, fonnt, rect, kado, surface, img)
 
     def hit(self):#ボタンを押したら押された演出をする,...予定
@@ -737,9 +735,10 @@ if __name__ == "__main__":#デバッグ用
     GAMENN.fill(Iro.SIRO)
     a = Card(0)
     a.paint(alpha=230)
-    a.set_img(pg.image.load("GameV3/gazou/migi.png"))
+    #a.set_img(pg.image.load("GameV3/gazou/migi.png"))
     a.paint_img()
     a.movable_on()
+    hako = TxtBox("あいうえお")
     pg.display.update()
     break_code = False
     can = False
@@ -750,6 +749,7 @@ if __name__ == "__main__":#デバッグ用
         GAMENN.fill(Iro.PINNKU)
         a.paint(alpha=200)
         a.paint_img(alpha=100)
+        hako.paint_txt()
         pg.display.update()
 
     while 1:
