@@ -15,6 +15,9 @@ STORAGE_ZURE_Y = CARD_ZURE_Y
 POSE_X = 100
 POSE_Y = 100
 
+
+
+
 class Home(lib.Scene):#ノーマルモードの管理クラス
     def __init__(self, frame_size=5, bgc=BGC, clock=30, surface=GAMENN):
         super().__init__(frame_size, bgc, clock, surface)
@@ -53,3 +56,4 @@ if __name__ == "__main__":
     while res == ROOP_CODE:
         res = game.main()
         print("a")
+
