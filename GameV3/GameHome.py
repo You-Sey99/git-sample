@@ -19,13 +19,31 @@ class Home(lib.Scene):#ノーマルモードの管理クラス
     def __init__(self, frame_size=5, bgc=BGC, clock=30, surface=GAMENN):
         super().__init__(frame_size, bgc, clock, surface)
 
-        self.pose_bottun = lib.Bottun(txt="一時停止",rect=((POSE_X, POSE_Y),TBOX_SIZE))
+        self.pose_bottun1 = lib.Bottun(txt="はじめから",rect=((POSE_X, POSE_Y),(157,55)))
+        self.pose_bottun2 = lib.Bottun(txt="つづきから",rect=((POSE_X, 200),(157,55)))
     
     def back_ground(self,) -> None:
         super().back_ground()
 
-        self.pose_bottun.paint(Iro.SIRO)
-        self.pose_bottun.paint_txt(add_y=10)
+        self.pose_bottun1.paint(Iro.SIRO)
+        self.pose_bottun1.paint_txt(add_y=10)
+
+        self.pose_bottun2.paint(Iro.SIRO)
+        self.pose_bottun2.paint_txt(add_y=10)
+
+
+
+    def ev_mouse(self, event: pg.event) -> int:
+        mov = False
+        if event.type == pg.MOUSEBUTTONDOWN:
+            mouse_bottun = pg.mouse.get_pressed()
+            if self.pose_bottun1.hit():#pose
+                return 1
+            
+            if self.pose_bottun2.hit():#pose
+                return 2
+
+        
 
 if __name__ == "__main__":
     game = Home()
