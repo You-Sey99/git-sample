@@ -9,8 +9,8 @@ import time
 
 
 class PlayTA(gpn.PlayNormal):#タイムアタックモード
-    def __init__(self, frame_size=5, bgc=gpn.BGC, clock=30, surface=gpn.GAMENN ,limit=60):
-        super().__init__(frame_size, bgc, clock, surface)
+    def __init__(self,bgc=gpn.BGC, surface=gpn.GAMENN ,limit=60):
+        super().__init__(bgc= bgc, surface= surface)
         self.limit = limit
 
     def time_update(self) -> None:
