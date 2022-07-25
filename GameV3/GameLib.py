@@ -153,15 +153,16 @@ class GameData():#ゲームデータのやり取りをするクラス,あった�
         count = 0
 
         for i in range(CARD_KAZU):#ここからデータを取り込んでいく
-            try:#プレイヤーがいじれるところにはできるだけtryを付けたい
+            #try:#プレイヤーがいじれるところにはできるだけtryを付けたい
                 self.card_no[i] = int(card_no[i])
+                """
             except (IndexError,ValueError):#エラー名のところは一個なら()はいらない
                 self.card_no[i] = random.randint(RAND_MIN,RAND_MAX)
                 count = 1
             
             if self.card_no[i] < RAND_MIN or RAND_MAX <= self.card_no[i]:
                     self.card_no[i] = random.randint(RAND_MIN,RAND_MAX)
-                    count = 1
+                    count = 1#"""
         if count:#データの取り込みがうまくいってないとこがあったら教える
             print("era- :can't get card\n")#<-は実際にエラーにして文章を表示することもできる
             count = 0
@@ -225,7 +226,7 @@ class GameData():#ゲームデータのやり取りをするクラス,あった�
                 count = False
                 break
         if count:
-            self.okiba_no = okiba_c_no
+            self.okiba_no[no] = okiba_c_no
 
         return count
 
@@ -251,7 +252,7 @@ class GameData():#ゲームデータのやり取りをするクラス,あった�
         res = True
         res = res and self.set_card(gamedata[0])
         for i in range(OKIBA_KAZU):
-            res = res and self.set_strage_no(gamedata[1][i])
+            res = res and self.set_strage_no(i,gamedata[1][i])
         res = res and self.set_time(gamedata[2])
         res = res and self.set_score(gamedata[3])
 
@@ -301,10 +302,11 @@ class GameData():#ゲームデータのやり取りをするクラス,あった�
 
         num = ""
         a=0
-        strg2 = [[] for i in range(OKIBA_KAZU)]
+        strg2 = [[0 for i in range(C_MAX)] for j in range(OKIBA_KAZU)]
         for j in range(OKIBA_KAZU):
+            a=0
             for t in strg[j]:
-                if t == "\n" or a>=CARD_KAZU:
+                if t == "\n" or a>=C_MAX:
                     break
                 elif t in (",","[","]"," "):
                     if num != "":
@@ -318,6 +320,7 @@ class GameData():#ゲームデータのやり取りをするクラス,あった�
                     #raise ValueError("era- :GameData is breaked\n")
         time2 = ""
         fl = True
+        """
         for t in time:
             if t in (str(i) in range(0,11,1)):
                 time2 = time2+t
@@ -325,14 +328,17 @@ class GameData():#ゲームデータのやり取りをするクラス,あった�
                 time2 = time2+t
                 fl = False
             elif time2 != "":
-                break
+                break#"""
+        time2 = float(time)
         
         score2 = ""
+        """
         for t in score:
             if t in (str(i) in range(0,11,1)):
                 score2 = score2+t
             elif score2 != "":
-                break
+                break#"""
+        score2 = int(score)
 
         res = self.set_gamedata([card2,strg2,time2,score2])
         if res:
@@ -342,14 +348,14 @@ class GameData():#ゲームデータのやり取りをするクラス,あった�
 
     def save(self) -> None:#ファイルにデータを書き込むメソッド
         with open("GameData.txt",'w') as g_data:
-            g_data.write(self.card_no)
+            g_data.write(str(self.card_no))
             g_data.write("\n")
             for i in range(OKIBA_KAZU):
-                g_data.write(self.okiba_no[i])
+                g_data.write(str(self.okiba_no[i]))
                 g_data.write("\n")
-            g_data.write(self.time)
+            g_data.write(str(self.time))
             g_data.write("\n")
-            g_data.write(self.score)
+            g_data.write(str(self.score))
             g_data.write("\n")
 
 
@@ -420,8 +426,8 @@ class Scene():#ゲームの各場面を管理するクラスの元,必要なメ�
 
     def ev_quit(self,event:pg.event) -> int:#右上の×を押したときのやつ
         if event.type == pg.QUIT:
-            #sys.exit()
-            return ROOP_CODE
+            sys.exit()
+            #return ROOP_CODE
 
     def ev_mouse(self,event:pg.event) -> int:#マウス関連のイベント
         return ROOP_CODE

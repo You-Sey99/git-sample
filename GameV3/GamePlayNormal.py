@@ -73,14 +73,14 @@ class CardStorage():#旧カード置き場クラス
         return self.strg[num].paint(w_col=w_col,w2_col=w2_col, alpha=alpha, alpha2=alpha2, w_change=w_change, font=font)
 
 
-    def reset(self) -> list:#カードの数字を全部0にする
+    def reset(self) -> None:#list:#カードの数字を全部0にする
         strg = self.strg
         n=0
-        for s in self.strg:
-            s.set_no(0)
-            s.set_pos(self.x,self.y+CARD_ZURE_Y*n)
+        for s in range(self.max):
+            self.strg[s].set_no(0)
+            self.strg[s].set_pos(self.x,self.y+CARD_ZURE_Y*s)
             n+=1
-        return strg
+        #return strg
 
 
     def noup_flag(self) -> bool:#↓noupメソッドを実行するフラグにした,stragにnoupできるとこがるときの判定にも使える
@@ -191,7 +191,7 @@ class PlayNormal(lib.Scene):#ノーマルモードの管理クラス
             self.cards[i].set_no(gamedata[0][i])
         for i in range(OKIBA_KAZU):
             for j in range(C_MAX):
-                self.strgs[i].set_no(gamedata[1][j],j)
+                self.strgs[i].set_no(gamedata[1][i][j],j)
                 if j==0:
                     break
         self.time_pose = gamedata[2]
@@ -201,7 +201,8 @@ class PlayNormal(lib.Scene):#ノーマルモードの管理クラス
         return True
 
     def get_gd(self) -> lib.GameData:
-        return lib.GameData((self.cards[i].get_no() for i in range(CARD_KAZU)),((self.strgs[i].get_no(j) for j in range(self.strgs[i].get_max())) for i in range(OKIBA_KAZU)),self.time,self.score)
+        res = lib.GameData(list(self.cards[i].get_no() for i in range(CARD_KAZU)),list(list(self.strgs[i].get_no(j) for j in range(self.strgs[i].get_max())) for i in range(OKIBA_KAZU)),self.time,self.score)
+        return res
 
     def gd_reset(self) -> None:
         self.bonus = False
@@ -232,7 +233,7 @@ class PlayNormal(lib.Scene):#ノーマルモードの管理クラス
         self.time_pose = self.time
 
     def time_update(self) -> None:
-        self.time = ((time.time()-self.time_st)//0.1)/10 + self.time_pose#今-開始 +前回セーブした分
+        self.time = (((time.time()-self.time_st)//0.1)/10 + self.time_pose)//0.1/10#今-開始 +前回セーブした分
         if self.time >= 100000000:#桁の制限
             self.time = 99999999
 
@@ -364,6 +365,21 @@ class PlayNormal(lib.Scene):#ノーマルモードの管理クラス
         self.time_st = time.time()
         self.bonus = False
         self.bonus_strg = -1
+        if self.cards[0].get_no() == 0:#初期化されてた時
+            for i in range(CARD_KAZU):
+                card_no = random.randint(RAND_MIN,RAND_MAX)
+                if i == 0:
+                    self.cards[i].set_pos(CARD_X*2,CARD_Y)
+                    self.cards[i].set_init_pos(((CARD_X*2,CARD_Y),CARD_SIZE))
+                else:
+                    mae_no = self.cards[i-1].get_no()
+                    while mae_no == card_no:
+                        card_no = random.randint(RAND_MIN,RAND_MAX)
+
+                self.cards[i].set_no(card_no)
+            self.cards[0].movable_on()
+            self.cards[1].movable_on()
+
         return super().main()
 
     def befor_event(self) -> int:
@@ -371,8 +387,8 @@ class PlayNormal(lib.Scene):#ノーマルモードの管理クラス
         caunt = 0
         for i in range(OKIBA_KAZU):#GAMEOVERの判別
             top = self.strgs[i].get_top()
-            if top >= self.strgs[i].get_max():
-                if self.strgs[i].get_no(top) in (self.cards[0].get_no(),self.cards[1].get_no()):
+            if top+1 >= self.strgs[i].get_max():
+                if not self.strgs[i].get_no(top) in (self.cards[0].get_no(),self.cards[1].get_no()):
                     caunt += 1
         if caunt >= OKIBA_KAZU:
             return -1#GameOver
@@ -477,9 +493,10 @@ class PlayNormal(lib.Scene):#ノーマルモードの管理クラス
 
 if __name__ == "__main__":
     game = PlayNormal()
-    #for i in range(9):
-        #game.strgs[0].strg[i].set_no(10-i,)
+    """
+    for j in range(4):
+        for i in range(9):
+            game.strgs[j].strg[i].set_no(10-i)#"""
     res = ROOP_CODE
-    while res == ROOP_CODE:
-        res = game.main()
-        print("a")
+    res = game.main()
+    print(res)

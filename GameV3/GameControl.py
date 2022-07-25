@@ -14,7 +14,7 @@ import pygame as pg
 
 home = hm.Home()#準備
 pose = ps.Pose()
-option = op.Option()
+#option = op.Option()
 
 game_mode = 0
 game_list = [pn.PlayNormal(),pta.PlayTA()]
@@ -51,7 +51,7 @@ while 1:
                 elif res == 2:#再開できるようにやめる
                     break
 
-                elif res == 3:#中断,再開できない
+                elif res == 3:#終了,再開できない
                     #ハイスコア更新
                     game_data = lib.GameData()#データの
                     game_data.save()#消去
@@ -67,8 +67,8 @@ while 1:
 
     
     elif res == 3:#設定画面
-        option.main()
-        game_mode = option.get_gamemode()
+        #option.main()
+        #game_mode = option.get_gamemode()
         game_play = game_list[game_mode]
 
 

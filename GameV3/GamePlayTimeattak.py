@@ -14,7 +14,7 @@ class PlayTA(gpn.PlayNormal):#タイムアタックモード
         self.limit = limit
 
     def time_update(self) -> None:
-        self.time = self.limit - ((time.time()-self.time_st)//0.1)/10 + self.time_pose#今-開始 +前回セーブした分
+        self.time = (self.limit - ((time.time()-self.time_st)//0.1)/10 + self.time_pose)//0.1/10#今-開始 +前回セーブした分
         if self.time >= 100000000:#桁の制限
             self.time = 99999999
 
@@ -32,6 +32,7 @@ if __name__ == "__main__":
     game = PlayTA()
     fin = "yes"
     while fin in ["yes","ye","y","hai"]:
+        game.gd_reset()
         game.main()
         fin = input("owaru?(y/n)")
 
