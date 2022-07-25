@@ -16,8 +16,8 @@ POSE_X = 265
 POSE_Y = 100
 
 class Pose(lib.Scene):#ノーマルモードの管理クラス
-    def __init__(self, frame_size=5, bgc=BGC, clock=30, surface=GAMENN):
-        super().__init__(frame_size, bgc, clock, surface)
+    def __init__(self,sounds=[] ,frame_size=5, bgc=BGC, clock=30, surface=GAMENN):
+        super().__init__(sounds,frame_size, bgc, clock, surface)
 
         self.pose_bottun1 = lib.Bottun(txt="再開",rect=((POSE_X, POSE_Y),(70,55)))
         self.pose_bottun2 = lib.Bottun(txt="中断",rect=((POSE_X, POSE_Y+100),(70,55)))

@@ -19,8 +19,8 @@ POSE_Y = 100
 
 
 class Home(lib.Scene):#ノーマルモードの管理クラス
-    def __init__(self, frame_size=5, bgc=BGC, clock=30, surface=GAMENN):
-        super().__init__(frame_size, bgc, clock, surface)
+    def __init__(self,sounds={"bgm":""} ,frame_size=5, bgc=BGC, clock=30, surface=GAMENN):
+        super().__init__( sounds,frame_size, bgc, clock, surface)
 
         self.pose_bottun1 = lib.Bottun(txt="はじめから",rect=((POSE_X, POSE_Y),(157,55)))
         self.pose_bottun2 = lib.Bottun(txt="つづきから",rect=((POSE_X, 200),(157,55)))

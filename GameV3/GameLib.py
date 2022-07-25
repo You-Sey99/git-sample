@@ -18,25 +18,27 @@ pg.display.set_caption("Lib")
 
 class Sound():#SEとかBGMを管理するクラス,インスタンス化して使う.
     def __init__(self,volum = 5,unit=SOUND_UNIT,sounds={}) -> None:
-        if not pg.mixer.get_init:#mixirが初期化されてなかったら初期化する
-            pg.mixer.init
+        if not pg.mixer.get_init():#mixirが初期化されてなかったら初期化する
+            pg.mixer.init()
         self.vol = volum#音量
         self.unit = unit#音量を調整する単位
 
         self.sounds = {}#辞書型で各音と名前をセットにする
         count = 0
         if isinstance(sounds,dict):#soundsが辞書型の時
-            for i in sounds.values():#引数soundsの各要素を1つずつ取り出し
+            for i in sounds.keys():#引数soundsの各要素を1つずつ取り出し
                 if isinstance(sounds[i],pg.mixer.Sound):#Soundオブジェクトを渡してきたとき
                     self.sounds[i] = sounds[i]
                     self.sounds[i].set_volume(self.unit*self.vol)
 
-                elif isinstance(sounds,str):#パスを指定してきたとき
+                elif isinstance(sounds[i],str):#パスを指定してきたとき
                     try:
                         self.sounds[i] = pg.mixer.Sound(sounds[i])
                         self.sounds[i].set_volume(self.unit*self.vol)
                     except (FileNotFoundError):
                         count += 1
+                else:
+                    print("aapa")
                 
         if count > 0:
             print("era-\n can't found ",count, " files\n")
@@ -58,7 +60,8 @@ class Sound():#SEとかBGMを管理するクラス,インスタンス化して�
         elif 1 < self.vol*self.unit:
             self.vol = int(1/self.unit)
 
-        self.sounds.set_volume(self.unit*self.vol)
+        for key in self.sounds.keys():
+            self.sounds[key].set_volume(self.unit*self.vol)
 
         return self.vol
 
@@ -111,8 +114,8 @@ class Sound():#SEとかBGMを管理するクラス,インスタンス化して�
         return None
 
     def play_sound(self,key:str,count:int) -> bool:#keyに一致する音を再生するメソッド,count=-1でずっと繰り返し
-        if isinstance(key,str):#keyがstr型の時
-            if key in self.sounds:#keyがsoundsの中にあるとき
+        #print(self.sounds)
+        if key in self.sounds.keys():#keyがsoundsの中にあるとき
                 try:#回数をキャストできなかったら1回
                     count = int(count)
                 except:
@@ -269,9 +272,9 @@ class GameData():#ゲームデータのやり取りをするクラス,あった�
     def get_gamedata(self) -> list:
         return [self.card_no,self.okiba_no,self.time,self.score]
 
-    def install(self) -> list:#ファイルからデータを取り込むメソッド
+    def install(self,mod=0) -> list:#ファイルからデータを取り込むメソッド
         try:#ゲームデータを取得
-            with open("GameData.txt",mode="r") as g_data:
+            with open("GameData"+str(mod)+".txt",mode="r") as g_data:
                 card = g_data.readline()
                 strg = [[] for i in range(OKIBA_KAZU)]
                 for i in range(OKIBA_KAZU):
@@ -346,8 +349,8 @@ class GameData():#ゲームデータのやり取りをするクラス,あった�
         else:
             return [None]
 
-    def save(self) -> None:#ファイルにデータを書き込むメソッド
-        with open("GameData.txt",'w') as g_data:
+    def save(self,mod=0) -> None:#ファイルにデータを書き込むメソッド
+        with open("GameData"+str(mod)+".txt",'w') as g_data:
             g_data.write(str(self.card_no))
             g_data.write("\n")
             for i in range(OKIBA_KAZU):
@@ -357,16 +360,75 @@ class GameData():#ゲームデータのやり取りをするクラス,あった�
             g_data.write("\n")
             g_data.write(str(self.score))
             g_data.write("\n")
+"""
+class HighScoreRanking():#ハイスコアを記録するやつ
+    pos = [100,100]
+    rank = int(5)
+    ranking = [0 for i in range(rank)]
+    ranking_t = [TxtBox("第"+str(i)+"位"+str(ranking[i]),rect=((pos[0],pos[1]+TBOX_ZURE_Y*i),TBOX_SIZE)) for i in range(rank)]
+    #ra = ranking+pos[0]
 
+    @classmethod
+    def paint(cls,col=Iro.KURO,alpha=255):
+        for i in range(cls.rank):
+            cls.ranking_t[i].set_txt("第"+str(i)+"位 : "+str(cls.ranking[i]))
+            cls.ranking_t[i].paint(col=col,alpha=alpha)
+
+    @classmethod
+    def install(cls,mod=0) -> bool:#ファイルからランキングを読込む
+        res = True
+        try:#ゲームデータを取得
+            with open("HighScoreRanking"+str(mod)+".txt",mode="r") as hs_rank:
+                txt_yobi = hs_rank.read().splitlines()
+                for i in range(cls.rank):
+                    try:
+                        cls.ranking = int(txt_yobi[i])
+                    except (ValueError):
+                        cls.ranking = 0
+                        res = res and False
+
+        except FileNotFoundError:
+            print("era- :can't find file\ncreat no data file\n")
+            cls.save()
+            res = res and False
+
+        cls.ranking_update(0)
+        return res
+
+    @classmethod
+    def save(cls,mod=0) -> bool:
+        cls.ranking_update(0)
+        hsr = [str(cls.ranking[i]) for i in range(cls.rank)]
+        res = True
+        try:
+            with open("HighScoreRanking"+str(mod)+".txt",mode='w') as hs_rank:  
+                hs_rank.writelines(hsr)
+        except FileNotFoundError:
+            print("era-\ncan't open file\n")
+            res = res and False
+        
+        return res
+
+
+    @classmethod
+    def ranking_update(cls,new_score:int) -> None:
+        ranking = cls.ranking
+        ranking.append(int(new_score))
+        ranking.sort()
+        for i in range(cls.rank):
+            cls.ranking[i] = ranking[i]
+#"""
 
 class Scene():#ゲームの各場面を管理するクラスの元,必要なメソッドだけオーバーライドして使う想定
-    def __init__(self, frame_size=5, bgc=Iro.IRO_List[Iro.iro_num(Iro.MOKKASIN)], clock=30, surface=GAMENN):
+    def __init__(self, sounds:dict,frame_size=5, bgc=Iro.IRO_List[Iro.iro_num(Iro.MOKKASIN)], clock=30, surface=GAMENN):
         self.surface = surface
         self.disp_w, self.disp_h = self.surface.get_size()
         self.clock = pg.time.Clock()
         self.clock_time = clock
         self.bgc = bgc
         self.frame_size = frame_size
+        self.sound_bgm = Sound(sounds=sounds)
+        self.sound_bgm.set_vol(1)
 #kokomade
 
     def main(self) -> int:#メインループ,
@@ -595,6 +657,9 @@ class Card(Box):#カードのクラス
         self.init_pos = self.rect#カードの初期位置,元の位置に戻すときに使う
         self.no = int(c_no)#数字
         self.movable = False#dragで動かせるかどうか
+        self.sound = Sound(sounds={"slid":"SE,BGM\se_maoudamashii_element_wind02.mp3"})
+        self.sound.set_unit(0.1)
+        self.sound.set_vol(2)
 
 
     def paint(self, w_col=Iro.KURO,w2_col=Iro.KIMIDORI, alpha=255, alpha2=255, w_change=False, font=font) -> int:#w_change=Trueかつhit()で枠と透明度とかが2の方に変わる
@@ -625,10 +690,12 @@ class Card(Box):#カードのクラス
         result = super().paint_img(alpha, add_x, g_h+add_y)
         return result
 
-    def drag(self,catch=True) -> bool:#カードをドラッグするメソッド,使い方は下の「デバッグ用」のところにある
+    def drag(self,catch=True,farst=False) -> bool:#カードをドラッグするメソッド,使い方は下の「デバッグ用」のところにある
         res = self.hit()#memo ^- back_ground関数を渡したい <- 他のとこと相互に関連するからできればやめたい <- dragの使い方を工夫した
         if self.movable and (res or catch):
             #print("mo")
+            if farst:
+                self.sound.play_sound("slid",0)
             mp = pg.mouse.get_pos()#マウスの位置を取得
             x = mp[0] - self.wide/2#カードの真ん中にマウスカーソルが来るようにした
             y = mp[1] - self.high/2
@@ -727,19 +794,103 @@ class TxtBox(Box):#文字を表示できるようになったBox
 class Bottun(TxtBox):#クリックとかしたら反応するボタンのクラス
     def __init__(self, txt: str, fonnt=font2, rect=((0, 0), TBOX_SIZE), kado=KADO_DEFO, surface=GAMENN, img=None) -> None:
         super().__init__(txt, fonnt, rect, kado, surface, img)
+        self.sound = Sound(sounds={"kurikku":"SE,BGM\se_maoudamashii_se_pc01.mp3",})
+        #self.sound.set_vol(0)
 
     def hit(self):#ボタンを押したら押された演出をする,...予定
         res = super().hit()
         if res:
-            pass
+            self.sound.play_sound("kurikku",0)
             #ボタンが押される演出、音とか動き
         return res
 
 
 
+class HighScoreRanking():#ハイスコアを記録するやつ
+    pos = [100,100]
+    rank = int(5)
+    ranking = [0 for i in range(rank)]
+    ranking_t = [0 for i in range(rank)]
+    for i in range(rank):
+        ranking_t[i] = TxtBox(txt="第"+str(i)+"位"+str(ranking[i]),rect=((pos[0],pos[1]+TBOX_ZURE_Y*i),TBOX_SIZE))
+
+
+    @classmethod
+    def paint(cls,col=Iro.SIRO):
+        for i in range(cls.rank):
+            cls.ranking_t[i].set_txt("第"+str(i)+"位 : "+str(cls.ranking[i]))
+            cls.ranking_t[i].paint_txt(col=col)
+
+    @classmethod
+    def install(cls,mod=0) -> bool:#ファイルからランキングを読込む
+        res = True
+        try:#ゲームデータを取得
+            with open("HighScoreRanking"+str(mod)+".txt",mode="r") as hs_rank:
+                txt_yobi = hs_rank.read().splitlines()
+                for i in range(cls.rank):
+                    try:
+                        cls.ranking = int(txt_yobi[i])
+                    except (ValueError):
+                        cls.ranking = 0
+                        res = res and False
+
+        except FileNotFoundError:
+            print("era- :can't find file\ncreat no data file\n")
+            cls.save()
+            res = res and False
+
+        cls.ranking_update(0)
+        return res
+
+    @classmethod
+    def save(cls,mod=0) -> bool:
+        cls.ranking_update(0)
+        hsr = [str(cls.ranking[i]) for i in range(cls.rank)]
+        res = True
+        try:
+            with open("HighScoreRanking"+str(mod)+".txt",mode='w') as hs_rank:  
+                hs_rank.writelines(hsr)
+        except FileNotFoundError:
+            print("era-\ncan't open file\n")
+            res = res and False
+        
+        return res
+
+
+    @classmethod
+    def ranking_update(cls,new_score:int) -> None:
+        ranking = cls.ranking
+        ranking.append(int(new_score))
+        ranking.sort()
+        for i in range(cls.rank):
+            cls.ranking[i] = ranking[i]
+        
+
+
 #kokomade_0715
 
 if __name__ == "__main__":#デバッグ用
+    pg.mixer.init()
+    papa = pg.mixer.Sound("aaa\maou_se_sound_paper01.mp3")
+    foot = pg.mixer.Sound("aaa\maou_se_sound_footstep02.mp3")
+    fall = pg.mixer.Sound("aaa\maou_se_sound_fall01.mp3")
+    papa.set_volume(0.8)
+    fall.set_volume(0.6)
+    #papa.play(-1)
+    #oku = Sound(sounds={})
+    rip = 10
+    while 1:
+        fin = input("owaru?(y/n)")
+        if not fin in ("y","yes"):
+            papa.play(1)
+            foot.play()
+            
+            #fall.play()
+            #papa.stop()
+        else:
+            break
+
+    """
     GAMENN.fill(Iro.SIRO)
     a = Card(0)
     a.paint(alpha=230)
@@ -797,4 +948,6 @@ if __name__ == "__main__":#デバッグ用
 
         if break_code:
             break
+
+        #"""
 
