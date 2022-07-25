@@ -194,21 +194,55 @@ class PlayNormal(lib.Scene):#ノーマルモードの管理クラス
                 self.strgs[i].set_no(gamedata[1][j],j)
                 if j==0:
                     break
-        self.time = gamedata[2]
-        self.time_t.set_txt(str(self.time))
+        self.time_pose = gamedata[2]
+        #self.time_t.set_txt(str(self.time))
         self.score = gamedata[3]
-        self.score_t.set_txt(str(self.score))
+        #self.score_t.set_txt(str(self.score))
         return True
 
     def get_gd(self) -> lib.GameData:
         return lib.GameData((self.cards[i].get_no() for i in range(CARD_KAZU)),((self.strgs[i].get_no(j) for j in range(self.strgs[i].get_max())) for i in range(OKIBA_KAZU)),self.time,self.score)
 
-    def back_ground(self,have=False) -> None:
-        super().back_ground()
+    def gd_reset(self) -> None:
+        self.bonus = False
+        self.bonus_strg = -1
 
+        self.cards = [lib.Card(0,rect=((CARD_X-CARD_ZURE_X*(i),CARD_Y),CARD_SIZE)) for i in range(CARD_KAZU)]
+        for i in range(CARD_KAZU):
+            card_no = random.randint(RAND_MIN,RAND_MAX)
+            if i == 0:
+                self.cards[i].set_pos(CARD_X*2,CARD_Y)
+                self.cards[i].set_init_pos(((CARD_X*2,CARD_Y),CARD_SIZE))
+            else:
+                mae_no = self.cards[i-1].get_no()
+                while mae_no == card_no:
+                    card_no = random.randint(RAND_MIN,RAND_MAX)
+
+            self.cards[i].set_no(card_no)
+        self.cards[0].movable_on()
+        self.cards[1].movable_on()
+
+        self.strgs = [CardStorage(pos_x=STORAGE_X+(STORAGE_ZURE_X)*i) for i in range(OKIBA_KAZU)]#strage*4
+        self.time = 0
+        self.time_pose = 0
+        self.time_st = 0
+        self.score = 0
+
+    def set_time_pose(self) -> None:
+        self.time_pose = self.time
+
+    def time_update(self) -> None:
         self.time = ((time.time()-self.time_st)//0.1)/10 + self.time_pose#今-開始 +前回セーブした分
         if self.time >= 100000000:#桁の制限
             self.time = 99999999
+
+    def back_ground(self,have=False) -> None:
+        super().back_ground()
+
+        #self.time = ((time.time()-self.time_st)//0.1)/10 + self.time_pose#今-開始 +前回セーブした分
+        #if self.time >= 100000000:#桁の制限
+        #    self.time = 99999999
+        self.time_update()
 
         tb_pos = self.time_t.get_rect()#スコアとかの位置調整
         n_posx = self.disp_w - (TIME_X + tb_pos[2])
@@ -326,6 +360,11 @@ class PlayNormal(lib.Scene):#ノーマルモードの管理クラス
                     return [i,j]
 
 
+    def main(self) -> int:
+        self.time_st = time.time()
+        self.bonus = False
+        self.bonus_strg = -1
+        return super().main()
 
     def befor_event(self) -> int:
         super().befor_event()

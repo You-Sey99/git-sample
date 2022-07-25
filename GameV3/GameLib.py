@@ -376,11 +376,13 @@ class Scene():#ゲームの各場面を管理するクラスの元,必要なメ�
             if (mo_pos[0] < self.frame_size or self.disp_w + self.frame_size < mo_pos[0]) or (mo_pos[1] < self.frame_size or self.disp_h + self.frame_size < mo_pos[1]):
                 self.window_out()
                 #continue
-            self.befor_event()
+            resu = self.befor_event()
+            if resu != ROOP_CODE:
+                return resu
             event = pg.event.get()
             if event != []:
                 for ev in event:
-                    resu = self.ev_befor(ev)
+                    self.ev_befor(ev)
                     self.back_ground()
                     pg.display.update()
                     if ev.type == pg.QUIT:
@@ -413,8 +415,8 @@ class Scene():#ゲームの各場面を管理するクラスの元,必要なメ�
         return ROOP_CODE
 
     #ev_シリーズは各イベントを処理するメソッド,主にこれをオーバーライドする
-    def ev_befor(self, event:pg.event) -> int:#イベントを処理する前に毎回やること
-        return ROOP_CODE
+    def ev_befor(self, event:pg.event) -> None:#イベントを処理する前に毎回やること
+        pass
 
     def ev_quit(self,event:pg.event) -> int:#右上の×を押したときのやつ
         if event.type == pg.QUIT:
