@@ -152,7 +152,7 @@ class CardStorage():#旧カード置き場クラス
 
 class PlayNormal(lib.Scene):#ノーマルモードの管理クラス
     def __init__(self,bgc=BGC, surface=GAMENN):
-        super().__init__(sounds={"bgm":"", "gameover":"SE,BGM\se_maoudamashii_jingle02.mp3"} ,bgc=bgc, surface=surface)
+        super().__init__(sounds={"bgm":"SE,BGM\\bgm_maoudamashii_cyber04.mp3", "gameover":"SE,BGM\se_maoudamashii_jingle02.mp3"} ,bgc=bgc, surface=surface)
         self.cards = [lib.Card(0,rect=((CARD_X-CARD_ZURE_X*(i),CARD_Y),CARD_SIZE)) for i in range(CARD_KAZU)]
         for i in range(CARD_KAZU):
             card_no = random.randint(RAND_MIN,RAND_MAX)
@@ -236,6 +236,8 @@ class PlayNormal(lib.Scene):#ノーマルモードの管理クラス
     def set_time_pose(self) -> None:
         self.time_pose = self.time
 
+    
+
     def time_update(self) -> None:
         self.time = (((time.time()-self.time_st)//0.1)/10 + self.time_pose)//0.1/10#今-開始 +前回セーブした分
         if self.time >= 100000000:#桁の制限
@@ -257,7 +259,7 @@ class PlayNormal(lib.Scene):#ノーマルモードの管理クラス
         self.time_t.set_txt(str(self.time))
         self.time_t.set_pos(n_posx,TIME_Y+TBOX_ZURE_Y)
         self.time_tbox.set_pos(n_posx,TIME_Y)
-        self.score_t.set_txt(str(self.score))
+        self.score_t.set_txt(str(int(self.score)))
         self.score_t.set_pos(n_posx,SCORE_Y+TBOX_ZURE_Y)
         self.score_tbox.set_pos(n_posx,SCORE_Y)
         self.pose_bottun.set_pos(n_posx,POSE_Y)
@@ -374,6 +376,7 @@ class PlayNormal(lib.Scene):#ノーマルモードの管理クラス
         self.time_st = time.time()
         self.bonus = False
         self.bonus_strg = -1
+        self.sound_bgm.play_sound("bgm",-1)
         if self.cards[0].get_no() == 0:#初期化されてた時
             for i in range(CARD_KAZU):
                 card_no = random.randint(RAND_MIN,RAND_MAX)
@@ -400,6 +403,7 @@ class PlayNormal(lib.Scene):#ノーマルモードの管理クラス
                 if not self.strgs[i].get_no(top) in (self.cards[0].get_no(),self.cards[1].get_no()):
                     caunt += 1
         if caunt >= OKIBA_KAZU:#GameOver
+            self.sound_bgm.stop_sound("bgm")
             self.sound_bgm.play_sound("gameover",0)
             pg.time.wait(5000)
             return -1
@@ -454,6 +458,7 @@ class PlayNormal(lib.Scene):#ノーマルモードの管理クラス
 
                 mov_num = -1
                 if self.pose_bottun.hit():#pose
+                    self.sound_bgm.stop_sound("bgm")
                     self.sound_se.play_sound("pose",0)
                     return 1
 

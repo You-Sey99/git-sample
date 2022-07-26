@@ -431,6 +431,12 @@ class Scene():#ゲームの各場面を管理するクラスの元,必要なメ�
         self.sound_bgm.set_vol(1)
 #kokomade
 
+    def set_vol(self,bgc_vol:int,se_vol:int) -> None:
+        bgc_vol = int(bgc_vol)
+        se_vol = int(se_vol)
+        self.sound_bgm.set_vol(bgc_vol)
+        self.sound_se.set_vol(se_vol)
+
     def main(self) -> int:#メインループ,
         resu = ROOP_CODE#これを追加した
         self.back_ground()
@@ -824,18 +830,19 @@ class HighScoreRanking():#ハイスコアを記録するやつ
     @classmethod
     def install(cls,mod=0) -> bool:#ファイルからランキングを読込む
         res = True
+        mod = int(mod)
         try:#ゲームデータを取得
             with open("HighScoreRanking"+str(mod)+".txt",mode="r") as hs_rank:
                 txt_yobi = hs_rank.read().splitlines()
                 for i in range(cls.rank):
                     try:
-                        cls.ranking = int(txt_yobi[i])
-                    except (ValueError):
-                        cls.ranking = 0
+                        cls.ranking[i] = int(txt_yobi[i])
+                    except (IndexError):
+                        cls.ranking[i] = 0
                         res = res and False
 
         except FileNotFoundError:
-            print("era- :can't find file\ncreat no data file\n")
+            #print("era- :can't find file\ncreat no data file\n")
             cls.save()
             res = res and False
 
@@ -848,8 +855,10 @@ class HighScoreRanking():#ハイスコアを記録するやつ
         hsr = [str(cls.ranking[i]) for i in range(cls.rank)]
         res = True
         try:
-            with open("HighScoreRanking"+str(mod)+".txt",mode='w') as hs_rank:  
-                hs_rank.writelines(hsr)
+            with open("HighScoreRanking"+str(mod)+".txt",mode='w') as hs_rank:
+                for t in hsr:
+                    hs_rank.write(t)
+                    hs_rank.write("\n")
         except FileNotFoundError:
             print("era-\ncan't open file\n")
             res = res and False
@@ -861,7 +870,7 @@ class HighScoreRanking():#ハイスコアを記録するやつ
     def ranking_update(cls,new_score:int) -> None:
         ranking = cls.ranking
         ranking.append(int(new_score))
-        ranking.sort()
+        ranking.sort(reverse=True)
         for i in range(cls.rank):
             cls.ranking[i] = ranking[i]
         
