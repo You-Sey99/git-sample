@@ -721,7 +721,10 @@ class Card(Box):#カードのクラス
             return True
         else:#どんな角度でも同じ速さで動く.はず
             if pos_x == self.x:
-                siita = math.radians(-90)
+                if pos_y < self.y:
+                    siita = math.radians(-90)
+                else:
+                    siita = math.radians(90)
             else:
                 tan = ((pos_y - self.y)/(pos_x - self.x))
                 siita = math.atan(tan)#-pi/2~pi/2

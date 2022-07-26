@@ -152,7 +152,7 @@ class CardStorage():#旧カード置き場クラス
 
 class PlayNormal(lib.Scene):#ノーマルモードの管理クラス
     def __init__(self,bgc=BGC, surface=GAMENN):
-        super().__init__(sounds={"bgm":"SE,BGM\\bgm_maoudamashii_cyber04.mp3", "gameover":"SE,BGM\se_maoudamashii_jingle02.mp3"} ,bgc=bgc, surface=surface)
+        super().__init__(sounds={"bgm":"SE,BGM\\bgm_maoudamashii_neorock10.mp3", "gameover":"SE,BGM\se_maoudamashii_jingle02.mp3"} ,bgc=bgc, surface=surface)
         self.cards = [lib.Card(0,rect=((CARD_X-CARD_ZURE_X*(i),CARD_Y),CARD_SIZE)) for i in range(CARD_KAZU)]
         for i in range(CARD_KAZU):
             card_no = random.randint(RAND_MIN,RAND_MAX)
