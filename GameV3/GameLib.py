@@ -813,7 +813,7 @@ class Bottun(TxtBox):#クリックとかしたら反応するボタンのクラ�
 
 
 class HighScoreRanking():#ハイスコアを記録するやつ
-    pos = [100,100]
+    pos = [360,100]
     rank = int(5)
     ranking = [0 for i in range(rank)]
     ranking_t = [0 for i in range(rank)]
