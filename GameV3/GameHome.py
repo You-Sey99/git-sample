@@ -24,6 +24,7 @@ class Home(lib.Scene):#ノーマルモードの管理クラス
 
         self.pose_bottun1 = lib.Bottun(txt="はじめから",rect=((POSE_X, POSE_Y),(157,55)))
         self.pose_bottun2 = lib.Bottun(txt="つづきから",rect=((POSE_X, 200),(157,55)))
+        #self.pose_bottun3 = lib.Bottun(txt="ハイスコア",rect=((POSE_X+260, POSE_Y),(157,55)))
     
     def back_ground(self,) -> None:
         super().back_ground()
@@ -33,6 +34,9 @@ class Home(lib.Scene):#ノーマルモードの管理クラス
 
         self.pose_bottun2.paint(Iro.SIRO)
         self.pose_bottun2.paint_txt(add_y=10)
+
+        #self.pose_bottun3.paint(Iro.SIRO)
+        #self.pose_bottun3.paint_txt(add_y=10)
 
 
 
