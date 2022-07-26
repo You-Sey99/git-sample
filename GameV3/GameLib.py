@@ -283,7 +283,12 @@ class GameData():#ゲームデータのやり取りをするクラス,あった�
                 score = g_data.readline()
         except FileNotFoundError:
             print("era- :can't find file\ncreat no data file\n")
-            self.save()
+            self.card_no=[0 for i in range(CARD_KAZU)]#最初にデータを入れる場所を作る
+            self.okiba_no=[[0 for i in range(C_MAX)] for j in range(OKIBA_KAZU)]
+            self.time = 0
+            self.score = 0
+            return [self.card_no,self.okiba_no,self.time,self.score]
+            #self.save()
 
         num = ""
         a = 0
@@ -429,6 +434,7 @@ class Scene():#ゲームの各場面を管理するクラスの元,必要なメ�
         self.frame_size = frame_size
         self.sound_bgm = Sound(sounds=sounds)
         self.sound_bgm.set_vol(1)
+        self.sound_se = Sound(sounds={})
 #kokomade
 
     def set_vol(self,bgc_vol:int,se_vol:int) -> None:
@@ -441,6 +447,7 @@ class Scene():#ゲームの各場面を管理するクラスの元,必要なメ�
         resu = ROOP_CODE#これを追加した
         self.back_ground()
         pg.display.update()
+        self.sound_bgm.play_sound("bgm",-1)
         while 1:
             self.clock.tick(self.clock_time)
             
@@ -700,8 +707,7 @@ class Card(Box):#カードのクラス
         res = self.hit()#memo ^- back_ground関数を渡したい <- 他のとこと相互に関連するからできればやめたい <- dragの使い方を工夫した
         if self.movable and (res or catch):
             #print("mo")
-            if farst:
-                self.sound.play_sound("slid",0)
+            
             mp = pg.mouse.get_pos()#マウスの位置を取得
             x = mp[0] - self.wide/2#カードの真ん中にマウスカーソルが来るようにした
             y = mp[1] - self.high/2
@@ -821,13 +827,13 @@ class HighScoreRanking():#ハイスコアを記録するやつ
     ranking = [0 for i in range(rank)]
     ranking_t = [0 for i in range(rank)]
     for i in range(rank):
-        ranking_t[i] = TxtBox(txt="第"+str(i)+"位"+str(ranking[i]),rect=((pos[0],pos[1]+TBOX_ZURE_Y*i),TBOX_SIZE))
+        ranking_t[i] = TxtBox(txt="第"+str(i+1)+"位"+str(ranking[i]),rect=((pos[0],pos[1]+TBOX_ZURE_Y*i),TBOX_SIZE))
 
 
     @classmethod
     def paint(cls,col=Iro.SIRO):
         for i in range(cls.rank):
-            cls.ranking_t[i].set_txt("第"+str(i)+"位 : "+str(cls.ranking[i]))
+            cls.ranking_t[i].set_txt("第"+str(i+1)+"位 : "+str(cls.ranking[i]))
             cls.ranking_t[i].paint_txt(col=col)
 
     @classmethod

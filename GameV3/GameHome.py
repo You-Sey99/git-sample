@@ -19,7 +19,7 @@ POSE_Y = 100
 
 
 class Home(lib.Scene):#ノーマルモードの管理クラス
-    def __init__(self,sounds={"bgm":""} ,frame_size=5, bgc=BGC, clock=30, surface=GAMENN):
+    def __init__(self,sounds={"bgm":"SE,BGM\\bgm_maoudamashii_cyber04.mp3"} ,frame_size=5, bgc=BGC, clock=30, surface=GAMENN):
         super().__init__( sounds,frame_size, bgc, clock, surface)
 
         self.Home_bottun1 = lib.Bottun(txt="はじめから",rect=((POSE_X, POSE_Y),(157,55)))
@@ -49,12 +49,15 @@ class Home(lib.Scene):#ノーマルモードの管理クラス
         if event.type == pg.MOUSEBUTTONDOWN:
             mouse_bottun = pg.mouse.get_pressed()
             if self.Home_bottun1.hit():
+                self.sound_bgm.stop_sound("bgm")
                 return 1
             
             if self.Home_bottun2.hit():
+                self.sound_bgm.stop_sound("bgm")
                 return 2
             
             if self.Option_bottun.hit():
+                self.sound_bgm.stop_sound("bgm")
                 return 3
 
         

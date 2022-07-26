@@ -23,7 +23,7 @@ UD_ADDY = 10
 class Option(lib.Scene):#設定画面
     def __init__(self, sounds: dict, frame_size=5, clock=30, ):
         super().__init__(sounds={}, frame_size=frame_size, clock=clock,)
-        self.bgm_vol = 5
+        self.bgm_vol = 1
         self.bgm_vol_t = lib.TxtBox(txt="0",rect=((SOUND_SET_X,SOUND_SET_Y),SOUND_SET_SIZE))
         self.bgm_up = lib.Bottun(txt=">",rect=((SOUND_SET_X+ SOUND_SET_SIZE[0]+10,SOUND_SET_Y),UPDOWN_SIZE))
         self.bgm_doun = lib.Bottun(txt="<",rect=((SOUND_SET_X- UPDOWN_SIZE[0]-10,SOUND_SET_Y),UPDOWN_SIZE))
@@ -89,11 +89,11 @@ class Option(lib.Scene):#設定画面
                     self.bgm_vol -= 1
 
             elif self.se_up.hit():
-                if (self.se_vol+1) < 10:
+                if (self.se_vol+1) <= 10:
                     self.se_vol += 1
 
             elif self.se_doun.hit():
-                if (self.se_vol-1) > 0:
+                if (self.se_vol-1) >= 0:
                     self.se_vol -= 1
 
             elif self.back.hit():

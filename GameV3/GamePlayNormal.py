@@ -376,7 +376,7 @@ class PlayNormal(lib.Scene):#ノーマルモードの管理クラス
         self.time_st = time.time()
         self.bonus = False
         self.bonus_strg = -1
-        self.sound_bgm.play_sound("bgm",-1)
+        
         if self.cards[0].get_no() == 0:#初期化されてた時
             for i in range(CARD_KAZU):
                 card_no = random.randint(RAND_MIN,RAND_MAX)
@@ -486,6 +486,8 @@ class PlayNormal(lib.Scene):#ノーマルモードの管理クラス
                             pg.display.update()
                         return ROOP_CODE#"""
                     mov = self.cards[mov_num].drag(mov,farst)
+                    if farst:
+                        self.sound_se.play_sound("slid",0)
                     farst = False
                     mouse_bottun = pg.mouse.get_pressed()
                     self.back_ground(have=True)
