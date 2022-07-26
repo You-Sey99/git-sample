@@ -2,6 +2,7 @@
 
 
 #上手くいくかな？
+from re import S
 import Iro_RGB as Iro
 import GameLib as lib
 from GameLocal import *
@@ -12,7 +13,7 @@ import time
 
 BGC = Iro.MOKKASIN
 pg.init()
-GAMENN = pg.display.set_mode(GAM_SIZE,pg.RESIZABLE)
+GAMENN = pg.display.set_mode(GAM_SIZE,pg.RESIZABLE,pg.SRCALPHA)
 pg.display.set_caption("Normal_Mode")
 STORAGE_X = 40
 STORAGE_Y = 40
@@ -188,6 +189,8 @@ class PlayNormal(lib.Scene):#ノーマルモードの管理クラス
 
         self.sound_se = lib.Sound(sounds={"put":"SE,BGM\\analog_game_5.mp3","chain":"SE,BGM\se_maoudamashii_system23.mp3","bonus":"SE,BGM\maou_se_8bit21.mp3","pose":"SE,BGM\maou_se_8bit08.mp3","slid":"SE,BGM\se_maoudamashii_element_wind02.mp3"})
         self.sound_se.set_vol(3)
+
+        self.gameovera = lib.TxtBox(txt="GAME OVER",fonnt=font_Dai, rect=((0,0),(350,70)))
         
 
     def gd_lord(self,gamedata:list) -> bool:#ゲームデータクラスからデータを入れるメソッド
@@ -243,7 +246,7 @@ class PlayNormal(lib.Scene):#ノーマルモードの管理クラス
         if self.time >= 100000000:#桁の制限
             self.time = 99999999
 
-    def back_ground(self,have=False) -> None:
+    def back_ground(self,have=False,gaov=False) -> None:
         super().back_ground()
 
         #self.time = ((time.time()-self.time_st)//0.1)/10 + self.time_pose#今-開始 +前回セーブした分
@@ -287,6 +290,27 @@ class PlayNormal(lib.Scene):#ノーマルモードの管理クラス
 
         if self.bonus:
             self.bonus_move()
+
+        if gaov:
+            """
+            col = (200,200,200)
+            col = col + (20,)
+            self.surface.fill(col)
+            s = pg.Surface((self.disp_w,self.disp_h), pg.SRCALPHA)   # per-pixel alpha
+            s.fill(col)                         # notice the alpha value in the color
+            self.surface.blit(s, (0,0))#"""
+            #pg.draw.rect(self.surface,color=col,rect=(0,0,self.disp_w,self.disp_w))
+            rec = [[self.disp_w/4,self.disp_h/4],[self.disp_w/2,self.disp_h/2]]
+            rec_ga = self.gameovera.get_rect()
+            if rec[1][0] < rec_ga[2]:
+                rec[1][0] = rec_ga[2]
+
+            elif rec[1][1] < rec_ga[3]:
+                rec[1][1] = rec_ga[3]
+            
+            self.gameovera.set_rect(rect=rec)
+            self.gameovera.paint(Iro.SIRO)
+            self.gameovera.paint_txt(Iro.KURO,add_x=rec[1][0]/2 -170, add_y=rec[1][1]/2 -35)#350,70
         
 
     def noup(self,num:int) -> bool:#バグったw   num==stragの番号, strageのカードの数字を上げるメソッド,上がったらTrue
@@ -403,6 +427,8 @@ class PlayNormal(lib.Scene):#ノーマルモードの管理クラス
                 if not self.strgs[i].get_no(top) in (self.cards[0].get_no(),self.cards[1].get_no()):
                     caunt += 1
         if caunt >= OKIBA_KAZU:#GameOver
+            self.back_ground(gaov=True)
+            pg.display.update()
             self.sound_bgm.stop_sound("bgm")
             self.sound_bgm.play_sound("gameover",0)
             pg.time.wait(5000)
@@ -521,9 +547,12 @@ if __name__ == "__main__":
     game = PlayNormal()
     #"""
     for j in range(4):
-        game.cards[j].set_no(2)
+        game.cards[j].set_no(1)
         for i in range(9):
             game.strgs[j].strg[i].set_no(10-i)#"""
+
+    game.strgs[0].strg[8].set_no(0)
+    game.cards[0].set_no(5)
     res = ROOP_CODE
     while 1:
         res = game.main()
