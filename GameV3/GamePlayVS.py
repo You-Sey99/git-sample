@@ -1,8 +1,8 @@
 # coding=[shift-jis]
 
 
-from tkinter.messagebox import NO
-from matplotlib.pyplot import cla
+
+from multiprocessing.connection import wait
 import Iro_RGB as Iro
 import GameLib as lib
 from GameLocal import *
@@ -11,6 +11,16 @@ import pygame as pg
 import sys 
 import random
 import time
+
+
+LIFE_BAR_SIZE = (300,40)
+LIFE_BAR_X = 100
+LIFE_BAR_Y = CARD_Y+CARD_SIZE[1]+30
+LIFE_BAR_FRAME = (LIFE_BAR_X-5,LIFE_BAR_Y-5,LIFE_BAR_SIZE[0]+10,LIFE_BAR_SIZE[1]+10)
+
+E_LIFE_BAR_X = GAM_SIZE[0]+LIFE_BAR_X
+E_LIFE_BAR_Y = LIFE_BAR_Y
+E_LIFE_BAR_FRAME = (E_LIFE_BAR_X-5,E_LIFE_BAR_Y-5,LIFE_BAR_SIZE[0]+10,LIFE_BAR_SIZE[1]+10)
 
 
 class PlayAut(gpn.PlayNormal):
@@ -56,10 +66,10 @@ class PlayAut(gpn.PlayNormal):
         move = False#移動
         move2 = False
         
-        move = self.cards[num].came_back(speed=3)
+        move = self.cards[num].came_back(speed=3*5)
         for i in range(2,CARD_KAZU-1):
-            self.cards[i].came_back(speed=3)
-        move2 = self.cards[CARD_KAZU-1].came_back(speed=10)
+            self.cards[i].came_back(speed=3*5)
+        move2 = self.cards[CARD_KAZU-1].came_back(speed=10*5)
 
         return move and move2
 
@@ -70,14 +80,14 @@ class PlayAut(gpn.PlayNormal):
         
         return False
            
-    def noup2(self, num: int) -> bool:
+    def noup2(self, num: int) -> bool:#移動
         top = self.active_strg_top-1
         #ue_no = self.strgs[num].get_no(top -1)#一番上の一個下の番号
         pos_to = self.strgs[num].get_rect(top-1)#演出の準備
         #print(top)
         #pos_from = self.strgs[num].get_rect(top)
         #演出,self.yはpos_to[1]に近づいてるのにabs(pos_y-self.y)は大きくなってる
-        fin = self.strgs[num].move(pos_to[0],pos_to[1],num_top=top,speed=0.5)
+        fin = self.strgs[num].move(pos_to[0],pos_to[1],num_top=top,speed=0.5*10)
         return fin
 
     
@@ -89,6 +99,30 @@ class PlayAut(gpn.PlayNormal):
         self.strgs[num].set_no(ue_no+1,top-1)#
         return True
 
+    def noup(self, rop:bool) -> bool:
+        if self.active_noup == 1:#noupの判定
+            self.count += 1
+            self.active_strg_top = self.strgs[self.active_strg].get_top() +1
+            rop = self.noup1(self.active_strg)#noupできるかできないかの判別
+            if rop:
+                self.active_noup = 2#noupを次に
+            else:
+                self.active_stage += 1#ステージを次に
+                self.score +=(2**self.strgs[self.active_strg].get_no(self.strgs[self.active_strg].get_top()))*(self.count-1)
+                self.cards_update1(self.active_card)
+                self.count = 0
+
+            return rop
+
+        else:#移動~数字変更
+            if rop:#初回+前回noup2ができたとき -> 移動中
+                rop = self.noup2(self.active_strg) 
+                return not rop
+
+            else:#前回noup2ができなかったとき -> 移動終了,数字の変更,noup1へ
+                self.active_noup = 1
+                self.noup3(self.active_strg)
+                return False
 
     def cards_update(self, num) -> bool:#前半と後半の2つに分けた
         return super().cards_update(num)
@@ -106,7 +140,7 @@ class PlayAut(gpn.PlayNormal):
             if self.bonus:
                 self.active_bonus_now = self.do_use_bonus()
 
-            else:
+            elif self.active_now:
                 self.res = self.active(rop=self.res)
 
     def ev_mouse(self, event: pg.event) -> int:
@@ -159,11 +193,12 @@ class PlayAut(gpn.PlayNormal):
             self.active_strg = moeff_info[1]
             self.active_card = moeff_info[0]
             self.active_strg_top = self.strgs[moeff_info[1]].get_top() +1
+            self.res = False
             self.active_now = True
 
             #ここからは別のメソッドにして同時操作できるようにする
             #ここに書くとこっちを実行中にもう片方が止まる
-
+        #self.active_mode()
 
         return super().befor_event()
 
@@ -189,39 +224,19 @@ class PlayAut(gpn.PlayNormal):
                 if rop:#putできたら
                     self.active_stage = 2
                     #self.active_strg_top = self.strgs[self.active_strg].get_top() +1
-                    self.cards[self.active_card].set_pos(self.disp_w,self.disp_h)
+                    self.cards[self.active_card].set_pos(self.disp_w,CARD_Y)
                     return True
 
                 else:#できなかったら
                     self.active_stage = 0
                     self.active_now = False
+                    self.res = False
                     return False
 
             #noupの処理をする
             elif self.active_stage == 2:
-                if self.active_noup == 1:#noupの判定
-                    self.count += 1
-                    self.active_strg_top = self.strgs[self.active_strg].get_top() +1
-                    rop = self.noup1(self.active_strg)#noupできるかできないかの判別
-                    if rop:
-                        self.active_noup = 2#noupを次に
-                    else:
-                        self.active_stage = 3#ステージを次に
-                        self.score +=(2**self.strgs[self.active_strg].get_no(self.strgs[self.active_strg].get_top()))*(self.count-1)
-                        self.cards_update1(self.active_card)
-                        self.count = 0
-
-                    return rop
-
-                else:#移動~数字変更
-                    if rop:#初回+前回noup2ができたとき -> 移動中
-                        rop = self.noup2(self.active_strg) 
-                        return not rop
-
-                    else:#前回noup2ができなかったとき -> 移動終了,数字の変更,noup1へ
-                        self.active_noup = 1
-                        self.noup3(self.active_strg)
-                        return False
+                rop = self.noup(rop)
+                return rop
 
             
             #手元の更新
@@ -237,6 +252,7 @@ class PlayAut(gpn.PlayNormal):
                     self.active_stage = 0
                     self.active_befor = self.time
                     self.ev_after(pg.KEYUP)
+                    return True
 
     def do_use_bonus(self) -> bool:
         for i in range(OKIBA_KAZU):#下のカード>上のカード になってるところがあればTrue,なければFalse
@@ -350,14 +366,121 @@ class VSCpu(PlayAut):#AutをVSようにカードの位置を変えたやつ
         self.time_st = 0
         self.score = 0
 
+class VSNormal(PlayAut):
+    def __init__(self, level=1, frame_size=5, bgc=gpn.BGC, clock=300, surface=gpn.GAMENN):
+        super().__init__(level, frame_size, bgc, clock, surface)
+
+    def ev_mouse1(self, event: pg.event) -> int:#どの操作をしたのか
+        if event.type == pg.MOUSEBUTTONDOWN:
+            if self.active_stage == 0:
+                mouse_bottun = pg.mouse.get_pressed()
+                if mouse_bottun[0]:
+                    if self.bonus:#ボーナス処理
+                        bou = self.bonus_move()
+                        if not(bou[0] == -1 or bou[1] == -1):
+                            self.active_bonus_now = True
+                            self.active_card = bou[1]
+                            self.active_strg = bou[0]
+
+                    
+                    elif self.pose_bottun.hit():#pose
+                        self.sound_bgm.stop_sound("bgm")
+                        self.sound_se.play_sound("pose",0)
+                        return 1
+
+                    else:
+                        for i in [0,1]:#dragするかどうか
+                            mov = self.cards[i].hit()
+                            if mov:
+                                #self.cards[i].sound.play_sound("slid",0)
+                                self.bonus = False
+                                self.active_now = True
+                                self.active_card = i
+                                self.active_stage = 1
+                                self.res = False
+                                break
+
+        return ROOP_CODE
+
+
+    def ev_mouse2(self) -> int:#dragしてる時の操作
+        mou = pg.mouse.get_pressed()
+        if mou[0]:
+            #self.active_now = True
+            self.cards[self.active_card].drag(catch=True)
+        
+        else:
+            #self.active_now = False
+            p = False
+            for i in range(OKIBA_KAZU):
+                if self.strgs[i].hit(self.strgs[i].get_top()+1):
+                    p = self.put(i, self.active_card)
+                    self.active_strg = i
+                    self.active_strg_top = self.strgs[i].get_top() +1
+                    break
+            if p:
+                self.active_stage = 2
+            else:
+                self.active_stage = 5
+                self.active_strg = -1
+                #self.active_card = -1
+                #self.active_now = False
+
+        return ROOP_CODE
+
+
+    def ev_mouse3(self,rop:bool) -> bool:
+        rop = self.noup(rop=rop)
+        return rop
+
+    def ev_mouse4(self, rop:bool) -> bool:
+        if not rop:
+            rop = self.cards_update2(self.active_card)
+            return rop
+
+        else:
+            self.active_now = False
+            self.active_card = -1
+            self.active_strg = -1
+            self.active_stage = 0
+            self.active_befor = self.time
+            self.ev_after(pg.KEYUP)
+            return True
+
+    def active(self, rop: bool) -> bool:
+        if self.active_stage == 1:
+            self.ev_mouse2()
+
+        elif self.active_stage == 2:
+            rop = self.ev_mouse3(rop=rop)
+
+        elif self.active_stage == 3:
+            rop = self.ev_mouse4(rop=rop)
+
+        elif self.active_stage == 5:#ev_mo2でputできなかったとき
+            rop = self.cards[self.active_card].came_back()
+            if rop:
+                self.active_stage = 0
+                self.active_strg = -1
+                self.active_card = -1
+                self.active_now = False
+
+
+        else:
+            self.active_now = False
+        
+        return rop
+
+    def active_mode(self) -> None:
+        if self.active_bonus_now:
+            self.res = self.active_bonus(rop=self.res)
+
+        elif self.active_now:
+            self.res = self.active(rop=self.res)
+
+
 class PlayVS():
-    def __init__(self,level, frame_size=5, bgc=gpn.BGC, clock=30, surface=gpn.GAMENN):
-        self.player = gpn.PlayNormal(frame_size=frame_size,bgc=bgc,clock=clock,surface=surface)
-        self.enemy = VSCpu(level=level,frame_size=frame_size,bgc=bgc,clock=clock,surface=surface)
-
-        self.player_hp = 100
-        self.enemy_hp = 100
-
+    def __init__(self, life=3000, hande=0, level=30, frame_size=5, bgc=gpn.BGC, clock=30, surface=gpn.GAMENN):
         self.surface = surface
         self.disp_w, self.disp_h = self.surface.get_size()
         self.clock = pg.time.Clock()
@@ -365,7 +488,144 @@ class PlayVS():
         self.bgc = bgc
         self.frame_size = frame_size
 
-    def back_ground(self):
+        self.player = VSNormal(frame_size=frame_size,bgc=bgc,clock=clock,surface=surface)
+        self.enemy = VSCpu(level=level,frame_size=frame_size,bgc=bgc,clock=clock,surface=surface)
+
+        self.player_hp = int(life)#HP
+        self.enemy_hp = int(life - hande)
+        self.player_hp_m = int(life)#MAX_HP
+        self.enemy_hp_m = int(life - hande)
+        self.win = 0#勝敗
+
+        self.player_hpbar = lib.Box(surface=self.surface, rect=((LIFE_BAR_X,LIFE_BAR_Y),LIFE_BAR_SIZE))#HPの表示用
+        self.player_hpbar_b = lib.Box(surface=self.surface, rect=((LIFE_BAR_X,LIFE_BAR_Y),LIFE_BAR_SIZE))
+        self.player_hpbar_f = lib.Box(surface=self.surface, rect=LIFE_BAR_FRAME)
+
+        self.enemy_hpbar = lib.Box(surface=self.surface, rect=((E_LIFE_BAR_X,E_LIFE_BAR_Y),LIFE_BAR_SIZE))
+        self.enemy_hpbar_b = lib.Box(surface=self.surface, rect=((E_LIFE_BAR_X,E_LIFE_BAR_Y),LIFE_BAR_SIZE))
+        self.enemy_hpbar_f = lib.Box(surface=self.surface, rect=E_LIFE_BAR_FRAME)
+
+        self.sound_se = lib.Sound(sounds={"damage":"oto\se_maoudamashii_se_drink02.mp3","win":"","lose":""})
+
+        
+
+    def damage(self, scr:int) -> int:
+        if scr < 10:
+            return 0
+        else:
+            score = scr
+            n = 0
+            while score > 10:
+                score = int(score/10)
+                n += 1
+
+            dam = (10+score) * ((n-1)**2)
+            return int(dam)
+
+    def life_bar_update(self) -> None:
+        wari = (self.enemy_hp)/self.enemy_hp_m
+        self.enemy_hpbar.set_rect(((E_LIFE_BAR_X,E_LIFE_BAR_Y),(LIFE_BAR_SIZE[0]*wari,LIFE_BAR_SIZE[1])))
+
+        wari = (self.player_hp)/self.player_hp_m
+        self.player_hpbar.set_rect(((LIFE_BAR_X,LIFE_BAR_Y),(LIFE_BAR_SIZE[0]*wari,LIFE_BAR_SIZE[1])))
+
+
+
+    def ba_g1(self, have:bool, add:float) -> None:
+        self.surface.fill(self.bgc)#背景の塗りつぶし
+        self.disp_w, self.disp_h = self.surface.get_size()#画面のサイズを取得
+        pg.draw.rect(self.surface,Iro.KURO, (0,0,self.disp_w,self.disp_h),width=self.frame_size)#画面の外枠を表示
+
+
+    def ba_g_p(self, have:bool) -> None:
+        for strg in self.player.strgs:#strgの表示 by player
+            top = strg.get_top()
+            mx = strg.get_max()
+            
+            strg.paint()#chan=self.bonus)
+            if top+1 < mx:
+                strg.paint_one(strg.get_top()+1,alpha=0,alpha2=0,w_change=have)
+            elif strg.get_no(top) in (self.player.cards[0].get_no(),self.player.cards[1].get_no()):
+                strg.paint_one(strg.get_top()+1,alpha=100,alpha2=100,w_change=have)
+
+        for i in range(len(self.player.cards)-1,-1,-1):#cardの表示 by player
+            self.player.cards[i].paint(w_change=self.player.cards[i].get_movable())
+
+        if self.player.bonus:
+            self.player.bonus_move()
+
+
+    def ba_g_e(self, have:bool) -> None:
+        for strg in self.enemy.strgs:#strgの表示 by enemy
+            top = strg.get_top()
+            mx = strg.get_max()
+            
+            strg.paint()#chan=self.bonus)
+            if top+1 < mx:
+                strg.paint_one(strg.get_top()+1,alpha=0,alpha2=0,w_change=have)
+            elif strg.get_no(top) in (self.enemy.cards[0].get_no(),self.enemy.cards[1].get_no()):
+                strg.paint_one(strg.get_top()+1,alpha=100,alpha2=100,w_change=have)
+
+        for i in range(len(self.enemy.cards)-1,-1,-1):#cardの表示 by enemy
+            self.enemy.cards[i].paint(w_change=self.enemy.cards[i].get_movable())
+
+
+    def ba_g_box(self, add:float) -> None:
+        self.player.time_update()
+        self.enemy.time_update()
+
+        tb_pos = self.player.time_t.get_rect()#スコアとかの位置調整
+        n_posx = self.disp_w - (gpn.TIME_X + tb_pos[2])
+        if n_posx < gpn.STORAGE_X+(gpn.STORAGE_ZURE_X)*OKIBA_KAZU:
+            n_posx = gpn.STORAGE_X+(gpn.STORAGE_ZURE_X)*OKIBA_KAZU +10
+        self.player.time_t.set_txt(str(abs(add -self.player.time)))
+        self.player.time_t.set_pos(n_posx,gpn.TIME_Y+TBOX_ZURE_Y)
+        self.player.time_tbox.set_pos(n_posx,gpn.TIME_Y)
+        self.player.score_t.set_txt(str(int(self.player.score)))
+        self.player.score_t.set_pos(n_posx,gpn.SCORE_Y+TBOX_ZURE_Y)
+        self.player.score_tbox.set_pos(n_posx,gpn.SCORE_Y)
+        self.player.pose_bottun.set_pos(n_posx,gpn.POSE_Y)
+
+        self.player.score_t.paint_txt()#スコア
+        self.player.score_tbox.paint_txt()
+        self.player.time_t.paint_txt()#時間
+        self.player.time_tbox.paint_txt()
+        
+        self.player.pose_bottun.paint(Iro.AOMURASAKI)
+        self.player.pose_bottun.paint_txt(add_y=10)
+
+
+
+    def back_ground(self, add=0, have=False, gaov=False):
+        self.enemy.active_mode()
+        self.player.active_mode()
+
+        self.ba_g1(have=have,add=add)
+        self.ba_g_e(have=have)
+        self.ba_g_box(add=add)
+        self.ba_g_p(have=have)
+
+        self.player_hpbar_f.paint(col=Iro.GINNIRO)
+        self.player_hpbar_b.paint(col=Iro.AKA)
+        self.player_hpbar.paint(col=Iro.KIMIDORI)
+
+        self.enemy_hpbar_f.paint(col=Iro.GINNIRO)
+        self.enemy_hpbar_b.paint(col=Iro.AKA)
+        self.enemy_hpbar.paint(col=Iro.KIMIDORI)
+        
+
+        if gaov:#ゲームオーバー
+            rec = [[self.disp_w/4,self.disp_h/4],[self.disp_w/2,self.disp_h/2]]
+            rec_ga = self.player.gameovera.get_rect()
+            if rec[1][0] < rec_ga[2]:
+                rec[1][0] = rec_ga[2]
+
+            elif rec[1][1] < rec_ga[3]:
+                rec[1][1] = rec_ga[3]
+            
+            self.player.gameovera.set_rect(rect=rec)
+            self.player.gameovera.paint(Iro.SIRO)
+            self.player.gameovera.paint_txt(Iro.KURO,add_x=rec[1][0]/2 -170, add_y=rec[1][1]/2 -35)#350,70
         return 0
 
 
@@ -378,14 +638,46 @@ class PlayVS():
         while 1:
             self.clock.tick(self.clock_time)
             
+            dam = self.damage(self.player.score)
+            if dam != 0:
+                self.enemy_hp -= dam
+                self.player.score = 0
+                self.sound_se.play_sound("damage",0)
+                if self.enemy_hp <= 0:
+                    self.win = 10
+
+            dam = self.damage(self.enemy.score)
+            if dam != 0:
+                self.player_hp -= dam
+                self.enemy.score = 0
+                self.sound_se.play_sound("damage",0)
+                if self.player_hp <= 0:
+                    self.win = -10
+
+            self.life_bar_update()
+            if self.win != 0:
+                if self.win > 0:
+                    self.player.gameovera.set_txt("YOU WIN!!")
+                    self.sound_se.play_sound("win",0)
+                else:
+                    self.player.gameovera.set_txt("YOU LOSE..")
+                    self.sound_se.play_sound("lose",0)
+
+                self.back_ground(gaov=True)
+                pg.display.update()
+                pg.time.wait(5000)
+                return self.win
+
             mo_pos = pg.mouse.get_pos()#マウスカーソルがsurfaceの上にないと止まる
             self.disp_w, self.disp_h = self.surface.get_size()
             if (mo_pos[0] < self.frame_size or self.disp_w + self.frame_size < mo_pos[0]) or (mo_pos[1] < self.frame_size or self.disp_h + self.frame_size < mo_pos[1]):
                 self.player.window_out()
                 #continue
+
             resu = self.player.befor_event()
             self.enemy.befor_event()
-            self.enemy.active_mode()
+            #self.enemy.active_mode()
+            #self.player.active_mode()
 
             if resu != ROOP_CODE:
                 return resu
@@ -398,7 +690,7 @@ class PlayVS():
                     if ev.type == pg.QUIT:
                         resu = self.player.ev_quit(ev)
                     elif ev.type == pg.MOUSEBUTTONDOWN or ev.type == pg.MOUSEBUTTONUP or ev.type == pg.MOUSEWHEEL or ev.type == pg.MOUSEMOTION:
-                        resu = self.player.ev_mouse(ev)
+                        resu = self.player.ev_mouse1(ev)
                     elif ev.type == pg.KEYDOWN or ev.type == pg.KEYUP:
                         resu = self.player.ev_key(ev)
                     elif ev.type == pg.WINDOWENTER or ev.type == pg.WINDOWLEAVE or ev.type == pg.WINDOWFOCUSLOST or ev.type == pg.WINDOWCLOSE:
@@ -418,11 +710,15 @@ class PlayVS():
                 self.player.ev_no_event()
 
 
+class VSGameData(lib.GameData):
+    def __init__(self, card_no=..., okiba_no=..., time=..., score=0) -> None:
+        super().__init__(card_no, okiba_no, time, score)
+
 
 
 if __name__ == "__main__":
     #vs = PlayAut(level=30,)
-    vs = VSCpu(level=30)
+    vs = PlayVS(level=300,life=30)
     """
     vs.strgs[0].strg[0].set_no(10)
     for j in range(4):

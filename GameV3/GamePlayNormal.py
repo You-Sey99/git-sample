@@ -540,8 +540,9 @@ if __name__ == "__main__":
     #"""
     for j in range(4):
         game.cards[j].set_no(1)
+        """
         for i in range(9):
-            game.strgs[j].strg[i].set_no(10)#10-i)#"""
+            game.strgs[j].strg[i].set_no(10-i)#"""
 
     #game.strgs[0].strg[8].set_no(0)
     #game.strgs[0].strg[7].set_no(10)
