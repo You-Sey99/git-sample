@@ -8,36 +8,54 @@ import GameOption as op
 import GamePose as ps
 import GamePlayNormal as pn
 import GamePlayTimeattak as pta
+import GamePlayVS as pvs
 import pygame as pg
 
 
 
 home = hm.Home()#準備
 pose = ps.Pose()
-option = op.Option(sounds={})
+
 
 game_mode = 0
-game_list = [pn.PlayNormal(),pta.PlayTA()]
+game_list = [pn.PlayNormal(),pta.PlayTA(),pvs.PlayVS()]
 game_play = game_list[0]
+game_mode_list = ["Normal","TimeAttak","VS CPU"]
+
+option = op.Option(sounds={},gamemode_list=game_mode_list)
 
 game_data = lib.GameData()
 game_rank = lib.HighScoreRanking()
 
 while 1:
+    if game_mode == 2:
+        game_data = pvs.VSGameData()
+    else:
+        game_data = lib.GameData()
+
     game_data.install(mod=game_mode)#ファイルからデータを取り出す
     game_rank.install(mod=game_mode)
     game_play = game_list[game_mode]
     
     res = home.main()#開始
     if res in (1,2):#ゲーム画面
-        if res == 2:#途中から
-                
-                game_play.gd_lord(game_data.get_gamedata())#PlayNormalにデータを入れる
-                #res = game_n.main()#開始
+        if res == 2:#途中から        
+            game_play.gd_lord(game_data.get_gamedata())#PlayNormalにデータを入れる
+            #res = game_n.main()#開始
         else:#始めから
-            game_rank.ranking_update(game_data.get_gamedata()[3])
-            game_rank.save(mod=game_mode)#ハイスコア更新
-            game_data = lib.GameData()#データの
+            #game_rank.ranking_update(game_data.get_gamedata()[3])
+            #game_rank.save(mod=game_mode)#ハイスコア更新
+            if game_mode == 2:#VSmode
+                vs_scr = game_data.get_gamedata()
+                vsc = vs_scr[1][0] - vs_scr[3][0]#pl_hp - en_hp
+                game_rank.ranking_update(vsc)
+                game_rank.save(mod=game_mode)#ハイスコア更新
+                game_data = pvs.VSGameData()
+            else:
+                game_rank.ranking_update(game_data.get_gamedata()[3])
+                game_rank.save(mod=game_mode)#ハイスコア更新
+                game_data = lib.GameData()
+            #game_data = lib.GameData()#データの
             game_data.save(mod=game_mode)#消去
             game_play.gd_reset()#ゲームを初期化
 
@@ -58,19 +76,46 @@ while 1:
                     break
 
                 elif res == 3:#終了,再開できない
-                    game_rank.ranking_update(game_data.get_gamedata()[3])
-                    game_rank.save(mod=game_mode)#ハイスコア更新
-                    game_data = lib.GameData()#データの
+                    #game_rank.ranking_update(game_data.get_gamedata()[3])
+                    #game_rank.save(mod=game_mode)#ハイスコア更新
+                    if game_mode == 2:#vs
+                        vs_scr = game_data.get_gamedata()
+                        vsc = vs_scr[1][0] - vs_scr[3][0]#pl_hp - en_hp
+                        game_rank.ranking_update(vsc)
+                        game_rank.save(mod=game_mode)#ハイスコア更新
+                        game_data = pvs.VSGameData()
+                    else:
+                        game_rank.ranking_update(game_data.get_gamedata()[3])
+                        game_rank.save(mod=game_mode)#ハイスコア更新
+                        game_data = lib.GameData()
+                    #game_data = lib.GameData()#データの
                     game_data.save(mod=game_mode)#消去
                     game_play.gd_reset()#ゲームを初期化
                     break
 
             elif res == -1:#GameOverになったとき
+                #game_rank.ranking_update(game_data.get_gamedata()[3])
+                #game_rank.save(mod=game_mode)#ハイスコア更新
+                if game_mode == 2:#VSmode
+                    vs_scr = game_data.get_gamedata()
+                    vsc = vs_scr[1][0] - vs_scr[3][0]#pl_hp - en_hp
+                    game_rank.ranking_update(vsc)
+                    game_rank.save(mod=game_mode)#ハイスコア更新
+                    game_data = pvs.VSGameData()
+                else:
+                    game_rank.ranking_update(game_data.get_gamedata()[3])
+                    game_rank.save(mod=game_mode)#ハイスコア更新
+                    game_data = lib.GameData()
+                #game_data = lib.GameData()#データの
+                game_data.save(mod=game_mode)#消去
+                game_play.gd_reset()#ゲームを初期化
+
+                """
                 game_rank.ranking_update(game_data.get_gamedata()[3])
                 game_rank.save(mod=game_mode)#ハイスコア更新
                 game_data = lib.GameData()#データの
                 game_data.save(mod=game_mode)#消去
-                game_play.gd_reset()#ゲームを初期化
+                game_play.gd_reset()#ゲームを初期化"""
                 
                 break
 

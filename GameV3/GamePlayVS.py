@@ -3,6 +3,7 @@
 
 
 from multiprocessing.connection import wait
+from re import S
 import Iro_RGB as Iro
 import GameLib as lib
 from GameLocal import *
@@ -21,6 +22,237 @@ LIFE_BAR_FRAME = (LIFE_BAR_X-5,LIFE_BAR_Y-5,LIFE_BAR_SIZE[0]+10,LIFE_BAR_SIZE[1]
 E_LIFE_BAR_X = GAM_SIZE[0]+LIFE_BAR_X
 E_LIFE_BAR_Y = LIFE_BAR_Y
 E_LIFE_BAR_FRAME = (E_LIFE_BAR_X-5,E_LIFE_BAR_Y-5,LIFE_BAR_SIZE[0]+10,LIFE_BAR_SIZE[1]+10)
+
+
+class VSGameData():
+    def __init__(self,card_no=[0 for i in range(CARD_KAZU)],okiba_no=[[0 for i in range(C_MAX)] for j in range(OKIBA_KAZU)],time=float(0),score=0,hp=0, max_hp=0  ,card_no2=[0 for i in range(CARD_KAZU)],okiba_no2=[[0 for i in range(C_MAX)] for j in range(OKIBA_KAZU)],time2=float(0),score2=0,hp2=0,max_hp2=0) -> None:
+        self.pl_gd = lib.GameData(card_no=card_no,okiba_no=okiba_no,time=time,score=score)
+        self.en_gd = lib.GameData(card_no=card_no2,okiba_no=okiba_no2,time=time2,score=score2)
+
+        try:
+            self.pl_hp = int(hp)
+            self.en_hp = int(hp2)
+            self.pl_hp_m = int(max_hp)
+            self.en_hp_m = int(max_hp2)
+        except (ValueError):
+            print("era- :can't get hp data\n")
+            self.pl_hp = 0
+            self.en_hp = 0
+            self.pl_hp_m = 0
+            self.en_hp_m = 0
+
+
+    def set_card(self, card_no:int,card_no2:int) -> bool:
+        res = self.pl_gd.set_card(card_no=card_no)
+        res2 = self.en_gd.set_card(card_no=card_no2)
+        return res and res2
+
+    def set_strag_no(self, no:int,okiba_no:int, no2:int,okiba_no2:int) -> bool:
+        res = self.pl_gd.set_strage_no(no=no,okiba_c_no=okiba_no)
+        res2 = self.en_gd.set_strage_no(no=no2,okiba_c_no=okiba_no2)
+        return res and res2
+
+    def set_time(self, time:float,time2:float) -> bool:
+        res = self.pl_gd.set_time(time=time)
+        res2 = self.en_gd.set_time(time=time2)
+        return res and res2
+
+    def set_score(self, score:int,score2:int) -> bool:
+        res = self.pl_gd.set_score(score=score)
+        res2 = self.en_gd.set_score(score=score2)
+        return res and res2
+
+    def set_hp(self, hp:int,max_hp:int, hp2:int,max_hp2:int) -> bool:
+        try:
+            hp = int(hp)
+            max_hp = int(max_hp)
+            hp2 = int(hp2)
+            max_hp2 = int(max_hp2)
+
+            self.pl_hp = int(hp)
+            self.en_hp = int(hp2)
+            self.pl_hp_m = int(max_hp)
+            self.en_hp_m = int(max_hp2)
+        except (ValueError):
+            return False
+
+    def set_gamedata(self, gamedata:list) -> bool:
+        res = self.pl_gd.set_gamedata(gamedata=gamedata[0])
+        res2 = self.en_gd.set_gamedata(gamedata=gamedata[2])
+        res3 = self.set_hp(gamedata[1][0],gamedata[1][1],gamedata[3][0],gamedata[3][1])
+        return res and res2 and res3
+
+    def get_gamedata(self) -> list:
+        gd_1 = self.pl_gd.get_gamedata()
+        gd_2 = self.en_gd.get_gamedata()
+        return [gd_1, [self.pl_hp,self.pl_hp_m], gd_2, [self.en_hp, self.en_hp_m]]
+
+
+
+    def install(self, mod=2):
+        try:#ゲームデータを取得
+            with open("GameData"+str(mod)+".txt",mode="r") as g_data:
+                card = g_data.readline()
+                strg = [[] for i in range(OKIBA_KAZU)]
+                for i in range(OKIBA_KAZU):
+                    strg[i] = g_data.readline()
+                time = g_data.readline()
+                score = g_data.readline()
+                hp = g_data.readline()
+                max_hp = g_data.readline()
+
+                card2 = g_data.readline()
+                strg2 = [[] for i in range(OKIBA_KAZU)]
+                for i in range(OKIBA_KAZU):
+                    strg2[i] = g_data.readline()
+                time2 = g_data.readline()
+                score2 = g_data.readline()
+                hp2 = g_data.readline()
+                max_hp2 = g_data.readline()
+
+
+        except FileNotFoundError:
+            print("era- :can't find file\ncreat no data file\n")
+            self.pl_gd = lib.GameData()
+            self.en_gd = lib.GameData()
+            self.pl_hp = 0
+            self.pl_hp_m = 0
+            self.en_hp = 0
+            self.en_hp_m = 0
+            return [self.pl_gd.get_gamedata(), [self.pl_hp,self.pl_hp_m], self.en_gd.get_gamedata(), [self.en_hp,self.en_hp_m]]
+            #self.save()
+
+
+
+        #pl
+        num = ""
+        a = 0
+        card_sub = [ 0 for i in range(CARD_KAZU)]
+        for t in card:
+            if t == "\n" or a>=CARD_KAZU:
+                break
+            elif t in (",","[","]"," "):
+                if num != "":
+                    card_sub[a] = int(num)
+                    a += 1
+                    num = ""
+            elif t in (str(i) for i in range(MAX_NO)):
+                num += t
+            else:
+                continue
+   
+        num = ""
+        a=0
+        strg_sub = [[0 for i in range(C_MAX)] for j in range(OKIBA_KAZU)]
+        for j in range(OKIBA_KAZU):
+            a=0
+            for t in strg[j]:
+                if t == "\n" or a>=C_MAX:
+                    break
+                elif t in (",","[","]"," "):
+                    if num != "":
+                        strg_sub[j][a] = int(num)
+                        a += 1
+                        num = ""
+                elif t in (str(i) for i in range(MAX_NO)):
+                    num += t
+                else:
+                    continue
+                    #raise ValueError("era- :GameData is breaked\n")
+
+        time = float(time)
+        score = int(score)
+        res = self.pl_gd.set_gamedata([card_sub,strg_sub,time,score])
+
+
+
+        #en
+        num = ""
+        a = 0
+        card_sub = [ 0 for i in range(CARD_KAZU)]
+        for t in card2:
+            if t == "\n" or a>=CARD_KAZU:
+                break
+            elif t in (",","[","]"," "):
+                if num != "":
+                    card_sub[a] = int(num)
+                    a += 1
+                    num = ""
+            elif t in (str(i) for i in range(MAX_NO)):
+                num += t
+            else:
+                continue
+   
+
+
+        num = ""
+        a=0
+        strg_sub = [[0 for i in range(C_MAX)] for j in range(OKIBA_KAZU)]
+        for j in range(OKIBA_KAZU):
+            a=0
+            for t in strg2[j]:
+                if t == "\n" or a>=C_MAX:
+                    break
+                elif t in (",","[","]"," "):
+                    if num != "":
+                        strg_sub[j][a] = int(num)
+                        a += 1
+                        num = ""
+                elif t in (str(i) for i in range(MAX_NO)):
+                    num += t
+                else:
+                    continue
+                    #raise ValueError("era- :GameData is breaked\n")
+
+        time2 = float(time2)
+        score2 = int(score2)
+        res2 = self.en_gd.set_gamedata([card_sub,strg_sub,time,score])
+
+
+        #hp
+        self.pl_hp = int(hp)
+        self.pl_hp_m = int(max_hp)
+        self.en_hp = int(hp2)
+        self.en_hp_m = int(max_hp2)
+
+        if res and res2:
+            return [self.pl_gd.get_gamedata(), [self.pl_hp,self.pl_hp_m], self.en_gd.get_gamedata(), [self.en_hp,self.en_hp_m]]
+        else:
+            return [None]
+
+
+
+    def save(self, mod=2):
+        with open("GameData"+str(mod)+".txt",'w') as g_data:
+            g_data.write(str(self.pl_gd.card_no))
+            g_data.write("\n")
+            for i in range(OKIBA_KAZU):
+                g_data.write(str(self.pl_gd.okiba_no[i]))
+                g_data.write("\n")
+            g_data.write(str(self.pl_gd.time))
+            g_data.write("\n")
+            g_data.write(str(self.pl_gd.score))
+            g_data.write("\n")
+            g_data.write(str(self.pl_hp))
+            g_data.write("\n")
+            g_data.write(str(self.pl_hp_m))
+            g_data.write("\n")
+
+            g_data.write(str(self.en_gd.card_no))
+            g_data.write("\n")
+            for i in range(OKIBA_KAZU):
+                g_data.write(str(self.en_gd.okiba_no[i]))
+                g_data.write("\n")
+            g_data.write(str(self.en_gd.time))
+            g_data.write("\n")
+            g_data.write(str(self.en_gd.score))
+            g_data.write("\n")
+            g_data.write(str(self.en_hp))
+            g_data.write("\n")
+            g_data.write(str(self.en_hp_m))
+            g_data.write("\n")
+
+
 
 
 class PlayAut(gpn.PlayNormal):
@@ -506,8 +738,7 @@ class PlayVS():
         self.enemy_hpbar_f = lib.Box(surface=self.surface, rect=E_LIFE_BAR_FRAME)
 
         self.sound_se = lib.Sound(sounds={"damage":"oto\se_maoudamashii_se_drink02.mp3","win":"","lose":""})
-
-        
+ 
 
     def damage(self, scr:int) -> int:
         if scr < 10:
@@ -523,7 +754,7 @@ class PlayVS():
             return int(dam)
 
     def life_bar_update(self) -> None:
-        wari = (self.enemy_hp)/self.enemy_hp_m
+        wari = (self.enemy_hp)/(self.enemy_hp_m)
         self.enemy_hpbar.set_rect(((E_LIFE_BAR_X,E_LIFE_BAR_Y),(LIFE_BAR_SIZE[0]*wari,LIFE_BAR_SIZE[1])))
 
         wari = (self.player_hp)/self.player_hp_m
@@ -595,7 +826,6 @@ class PlayVS():
         self.player.pose_bottun.paint_txt(add_y=10)
 
 
-
     def back_ground(self, add=0, have=False, gaov=False):
         self.enemy.active_mode()
         self.player.active_mode()
@@ -628,9 +858,45 @@ class PlayVS():
             self.player.gameovera.paint_txt(Iro.KURO,add_x=rec[1][0]/2 -170, add_y=rec[1][1]/2 -35)#350,70
         return 0
 
+    def gd_init(self) -> None:
+            self.player_hp_m = 3000
+            self.enemy_hp_m = 3000
+            self.player_hp = 3000
+            self.enemy_hp = 3000
+
+            for i in range(CARD_KAZU):
+                card_no = random.randint(RAND_MIN,RAND_MAX)
+                if i == 0:
+                    self.player.cards[i].set_pos(CARD_X*2,CARD_Y)
+                    self.player.cards[i].set_init_pos(((CARD_X*2,CARD_Y),CARD_SIZE))
+                else:
+                    mae_no = self.player.cards[i-1].get_no()
+                    while mae_no == card_no:
+                        card_no = random.randint(RAND_MIN,RAND_MAX)
+
+                self.player.cards[i].set_no(card_no)
+            self.player.cards[0].movable_on()
+            self.player.cards[1].movable_on()
+
+            for i in range(CARD_KAZU):
+                card_no = random.randint(RAND_MIN,RAND_MAX)
+                if i == 0:
+                    self.enemy.cards[i].set_pos(CARD_X*2,CARD_Y)
+                    self.enemy.cards[i].set_init_pos(((CARD_X*2,CARD_Y),CARD_SIZE))
+                else:
+                    mae_no = self.enemy.cards[i-1].get_no()
+                    while mae_no == card_no:
+                        card_no = random.randint(RAND_MIN,RAND_MAX)
+
+                self.enemy.cards[i].set_no(card_no)
+            self.enemy.cards[0].movable_on()
+            self.enemy.cards[1].movable_on()
 
     def main(self) -> int:
         #準備
+        if 0 in (self.player.cards[0].get_no(),self.enemy.cards[0].get_no(),self.player_hp_m,self.enemy_hp_m):
+            self.gd_init()
+
         resu = ROOP_CODE#
         self.back_ground()
         pg.display.update()
@@ -709,10 +975,42 @@ class PlayVS():
                 pg.display.update()
                 self.player.ev_no_event()
 
+    def gd_lord(self,gamedata:list) -> bool:
+        res = self.player.gd_lord(gamedata=gamedata[0])
+        res2 = self.player.gd_lord(gamedata=gamedata[2])
+        self.player_hp = gamedata[1][0]
+        self.player_hp_m = gamedata[1][1]
+        self.enemy_hp = gamedata[3][0]
+        self.enemy_hp_m = gamedata[3][1]
 
-class VSGameData(lib.GameData):
-    def __init__(self, card_no=..., okiba_no=..., time=..., score=0) -> None:
-        super().__init__(card_no, okiba_no, time, score)
+        return res and res2
+
+    def gd_reset(self) -> None:
+        self.player.gd_reset()
+        self.enemy.gd_reset()
+        self.player_hp = 0
+        self.player_hp_m = 0
+        self.enemy_hp = 0
+        self.enemy_hp_m = 0
+
+    def get_gd(self) -> VSGameData:
+        pl = self.player.get_gd()
+        pld = pl.get_gamedata()
+
+        en = self.enemy.get_gd()
+        end = en.get_gamedata()
+
+        res = VSGameData(*pld,self.player_hp,self.player_hp_m, *end,self.enemy_hp,self.enemy_hp_m)
+        return res
+
+
+    def set_vol(self,bgc_vol:int,se_vol:int) -> None:
+        se_vol = int(se_vol)
+        bgc_vol = int(bgc_vol)
+        self.player.set_vol(bgc_vol=bgc_vol,se_vol=se_vol)
+        self.enemy.set_vol(bgc_vol=bgc_vol,se_vol=se_vol)
+        self.sound_se.set_vol(se_vol)
+
 
 
 

@@ -365,64 +365,6 @@ class GameData():#ゲームデータのやり取りをするクラス,あった�
             g_data.write("\n")
             g_data.write(str(self.score))
             g_data.write("\n")
-"""
-class HighScoreRanking():#ハイスコアを記録するやつ
-    pos = [100,100]
-    rank = int(5)
-    ranking = [0 for i in range(rank)]
-    ranking_t = [TxtBox("第"+str(i)+"位"+str(ranking[i]),rect=((pos[0],pos[1]+TBOX_ZURE_Y*i),TBOX_SIZE)) for i in range(rank)]
-    #ra = ranking+pos[0]
-
-    @classmethod
-    def paint(cls,col=Iro.KURO,alpha=255):
-        for i in range(cls.rank):
-            cls.ranking_t[i].set_txt("第"+str(i)+"位 : "+str(cls.ranking[i]))
-            cls.ranking_t[i].paint(col=col,alpha=alpha)
-
-    @classmethod
-    def install(cls,mod=0) -> bool:#ファイルからランキングを読込む
-        res = True
-        try:#ゲームデータを取得
-            with open("HighScoreRanking"+str(mod)+".txt",mode="r") as hs_rank:
-                txt_yobi = hs_rank.read().splitlines()
-                for i in range(cls.rank):
-                    try:
-                        cls.ranking = int(txt_yobi[i])
-                    except (ValueError):
-                        cls.ranking = 0
-                        res = res and False
-
-        except FileNotFoundError:
-            print("era- :can't find file\ncreat no data file\n")
-            cls.save()
-            res = res and False
-
-        cls.ranking_update(0)
-        return res
-
-    @classmethod
-    def save(cls,mod=0) -> bool:
-        cls.ranking_update(0)
-        hsr = [str(cls.ranking[i]) for i in range(cls.rank)]
-        res = True
-        try:
-            with open("HighScoreRanking"+str(mod)+".txt",mode='w') as hs_rank:  
-                hs_rank.writelines(hsr)
-        except FileNotFoundError:
-            print("era-\ncan't open file\n")
-            res = res and False
-        
-        return res
-
-
-    @classmethod
-    def ranking_update(cls,new_score:int) -> None:
-        ranking = cls.ranking
-        ranking.append(int(new_score))
-        ranking.sort()
-        for i in range(cls.rank):
-            cls.ranking[i] = ranking[i]
-#"""
 
 class Scene():#ゲームの各場面を管理するクラスの元,必要なメソッドだけオーバーライドして使う想定
     def __init__(self, sounds:dict,frame_size=5, bgc=Iro.IRO_List[Iro.iro_num(Iro.MOKKASIN)], clock=30, surface=GAMENN):

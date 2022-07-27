@@ -1,7 +1,6 @@
 # coding=[shift-jis]
 
 
-from gc import garbage
 import Iro_RGB as Iro
 import GameLib as lib
 from GameLocal import *
@@ -21,7 +20,7 @@ UD_ADDY = 10
 
 
 class Option(lib.Scene):#設定画面
-    def __init__(self, sounds: dict, frame_size=5, clock=30, ):
+    def __init__(self, sounds: dict,gamemode_list:list, frame_size=5, clock=30, ):
         super().__init__(sounds={}, frame_size=frame_size, clock=clock,)
         self.bgm_vol = 1
         self.bgm_vol_t = lib.TxtBox(txt="0",rect=((SOUND_SET_X,SOUND_SET_Y),SOUND_SET_SIZE))
@@ -37,7 +36,8 @@ class Option(lib.Scene):#設定画面
         
         self.gamemode = 0
         self.gamemode_t = lib.Bottun(txt="Normal",rect=((SOUND_SET_X,50),SOUND_SET_SIZE))
-        self.gamemode_list = ["Normal","TimeAttak"]
+        self.gamemode_list = [str(gm) for gm in gamemode_list]
+        #self.gamemode_list = ["Normal","TimeAttak"]
 
         self.back = lib.Bottun(txt="戻る",rect=((SOUND_SET_X+50,SOUND_SET_Y+ SOUND_SET_SIZE[1]*3+60),(75,50)))
 
