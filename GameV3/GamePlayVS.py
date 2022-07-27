@@ -24,6 +24,7 @@ class PlayAut(gpn.PlayNormal):
         self.active_strg = -1
         self.active_stage = 0
         self.active_strg_top = -2
+        self.active_noup = 1
         self.count = 0
         self.res = False
 
@@ -58,6 +59,33 @@ class PlayAut(gpn.PlayNormal):
         move2 = self.cards[CARD_KAZU-1].came_back(speed=10)
 
         return move and move2
+
+    def noup1(self, num: int) -> bool:
+        if self.strgs[num].noup_flag():#Cardの数字が同じとき
+            self.sound_se.play_sound("chain",0)
+            return True
+        
+        return False
+           
+    def noup2(self, num: int) -> bool:
+        top = self.active_strg_top-1
+        #ue_no = self.strgs[num].get_no(top -1)#一番上の一個下の番号
+        pos_to = self.strgs[num].get_rect(top-1)#演出の準備
+        #print(top)
+        #pos_from = self.strgs[num].get_rect(top)
+        #演出,self.yはpos_to[1]に近づいてるのにabs(pos_y-self.y)は大きくなってる
+        fin = self.strgs[num].move(pos_to[0],pos_to[1],num_top=top,speed=0.5)
+        return fin
+
+    
+    def noup3(self, num: int) -> bool:
+        top = self.active_strg_top-1
+        ue_no = self.strgs[num].get_no(top -1)#一番上の一個下の番号
+        self.strgs[num].reset_rect()#元に戻す
+        self.strgs[num].set_no(0,top)#ゼロにする
+        self.strgs[num].set_no(ue_no+1,top-1)#
+        return True
+
 
     def cards_update(self, num) -> bool:#前半と後半の2つに分けた
         return super().cards_update(num)
@@ -107,11 +135,17 @@ class PlayAut(gpn.PlayNormal):
                 for j in range(2):
                     if mose_effective > effective[j][i]:
                         mose_effective = effective[j][i]
-                        moeff_info = (j,i)
+                        moeff_info = (j,i)#(手元orスペア,strg番号)
+
+                    elif mose_effective == effective[j][i]:
+                        if self.strgs[moeff_info[1]].get_no(moeff_info[0]) < self.strgs[i].get_no(j):
+                            mose_effective = effective[j][i]
+                            moeff_info = (j,i)#(手元orスペア,strg番号)
+
 
             self.active_strg = moeff_info[1]
             self.active_card = moeff_info[0]
-            self.active_strg_top = self.strgs[moeff_info[1]].get_top()
+            self.active_strg_top = self.strgs[moeff_info[1]].get_top() +1
             self.active_now = True
 
             #ここからは別のメソッドにして同時操作できるようにする
@@ -126,7 +160,7 @@ class PlayAut(gpn.PlayNormal):
             #一番有効な場所にカードを動かす
             if self.active_stage == 0:
                 if not rop:
-                    pos = self.strgs[self.active_stage].get_rect(self.active_strg_top)
+                    pos = self.strgs[self.active_strg].get_rect(self.active_strg_top)
                     rop = self.cards[self.active_card].move(pos_x=pos[0], pos_y=pos[1])
                 else:
                     rop = False
@@ -137,10 +171,12 @@ class PlayAut(gpn.PlayNormal):
 
             #カードを置く
             elif self.active_stage == 1:
-                rop = self.put(self.cards[self.active_card].get_no(),self.active_strg)
+                rop = self.put(self.active_strg, self.active_card)
                 
                 if rop:#putできたら
-                    self.active_stage == 2
+                    self.active_stage = 2
+                    #self.active_strg_top = self.strgs[self.active_strg].get_top() +1
+                    self.cards[self.active_card].set_pos(self.disp_w,self.disp_h)
                     return True
 
                 else:#できなかったら
@@ -150,17 +186,30 @@ class PlayAut(gpn.PlayNormal):
 
             #noupの処理をする
             elif self.active_stage == 2:
-                if rop:#初回+前回noupができたとき
-                    rop = self.noup(self.active_strg)
+                if self.active_noup == 1:#noupの判定
                     self.count += 1
+                    self.active_strg_top = self.strgs[self.active_strg].get_top() +1
+                    rop = self.noup1(self.active_strg)#noupできるかできないかの判別
+                    if rop:
+                        self.active_noup = 2#noupを次に
+                    else:
+                        self.active_stage = 3#ステージを次に
+                        self.score +=(2**self.strgs[self.active_strg].get_no(self.strgs[self.active_strg].get_top()))*(self.count-1)
+                        self.cards_update1(self.active_card)
+                        self.count = 0
+
                     return rop
 
-                else:#前回noupができなかったとき
-                    self.active_stage = 3
-                    self.score +=(2**self.strgs[i].get_no(self.strgs[i].get_top()))*(self.count-1)
-                    self.cards_update1(self.active_card)
-                    self.count = 0
-                    return False
+                else:#移動~数字変更
+                    if rop:#初回+前回noup2ができたとき -> 移動中
+                        rop = self.noup2(self.active_strg) 
+                        return not rop
+
+                    else:#前回noup2ができなかったとき -> 移動終了,数字の変更,noup1へ
+                        self.active_noup = 1
+                        self.noup3(self.active_strg)
+                        return False
+
             
             #手元の更新
             elif self.active_stage == 3:
@@ -172,8 +221,9 @@ class PlayAut(gpn.PlayNormal):
                     self.active_now = False
                     self.active_card = -1
                     self.active_strg = -1
-                    self.active_strg = 0
+                    self.active_stage = 0
                     self.active_befor = self.time
+
 
             #終わり
         
@@ -190,6 +240,6 @@ class PlayVS(gpn.PlayNormal):
 
 
 if __name__ == "__main__":
-    vs = PlayAut(level=10)
+    vs = PlayAut(level=30,)
     a = vs.main()
     print(a)

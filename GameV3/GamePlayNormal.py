@@ -152,8 +152,8 @@ class CardStorage():#旧カード置き場クラス
         return self.max
 
 class PlayNormal(lib.Scene):#ノーマルモードの管理クラス
-    def __init__(self,bgc=BGC, surface=GAMENN):
-        super().__init__(sounds={"bgm":"SE,BGM\\bgm_maoudamashii_neorock10.mp3", "gameover":"SE,BGM\se_maoudamashii_jingle02.mp3"} ,bgc=bgc, surface=surface)
+    def __init__(self,bgc=BGC, surface=GAMENN,clock=30):
+        super().__init__(sounds={"bgm":"SE,BGM\\bgm_maoudamashii_neorock10.mp3", "gameover":"SE,BGM\se_maoudamashii_jingle02.mp3"} ,bgc=bgc, surface=surface, clock=clock)
         self.cards = [lib.Card(0,rect=((CARD_X-CARD_ZURE_X*(i),CARD_Y),CARD_SIZE)) for i in range(CARD_KAZU)]
         for i in range(CARD_KAZU):
             card_no = random.randint(RAND_MIN,RAND_MAX)
@@ -246,7 +246,7 @@ class PlayNormal(lib.Scene):#ノーマルモードの管理クラス
         if self.time >= 100000000:#桁の制限
             self.time = 99999999
 
-    def back_ground(self,have=False,gaov=False) -> None:
+    def back_ground(self,have=False,gaov=False,add=0) -> None:
         super().back_ground()
 
         #self.time = ((time.time()-self.time_st)//0.1)/10 + self.time_pose#今-開始 +前回セーブした分
@@ -259,7 +259,7 @@ class PlayNormal(lib.Scene):#ノーマルモードの管理クラス
         n_posx = self.disp_w - (TIME_X + tb_pos[2])
         if n_posx < STORAGE_X+(STORAGE_ZURE_X)*OKIBA_KAZU:
             n_posx = STORAGE_X+(STORAGE_ZURE_X)*OKIBA_KAZU +10
-        self.time_t.set_txt(str(self.time))
+        self.time_t.set_txt(str(abs(add -self.time)))
         self.time_t.set_pos(n_posx,TIME_Y+TBOX_ZURE_Y)
         self.time_tbox.set_pos(n_posx,TIME_Y)
         self.score_t.set_txt(str(int(self.score)))
@@ -292,14 +292,6 @@ class PlayNormal(lib.Scene):#ノーマルモードの管理クラス
             self.bonus_move()
 
         if gaov:
-            """
-            col = (200,200,200)
-            col = col + (20,)
-            self.surface.fill(col)
-            s = pg.Surface((self.disp_w,self.disp_h), pg.SRCALPHA)   # per-pixel alpha
-            s.fill(col)                         # notice the alpha value in the color
-            self.surface.blit(s, (0,0))#"""
-            #pg.draw.rect(self.surface,color=col,rect=(0,0,self.disp_w,self.disp_w))
             rec = [[self.disp_w/4,self.disp_h/4],[self.disp_w/2,self.disp_h/2]]
             rec_ga = self.gameovera.get_rect()
             if rec[1][0] < rec_ga[2]:
@@ -551,8 +543,9 @@ if __name__ == "__main__":
         for i in range(9):
             game.strgs[j].strg[i].set_no(10-i)#"""
 
-    game.strgs[0].strg[8].set_no(0)
-    game.cards[0].set_no(5)
+    #game.strgs[0].strg[8].set_no(0)
+    #game.strgs[0].strg[7].set_no(10)
+    #game.cards[0].set_no(10)
     res = ROOP_CODE
     while 1:
         res = game.main()

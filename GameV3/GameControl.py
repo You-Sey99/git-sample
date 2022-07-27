@@ -43,10 +43,11 @@ while 1:
 
         while 2:#考えやすくするために2にした        
             res = game_play.main()#開始
+            game_data = game_play.get_gd()
+            game_data.save(mod=game_mode)
 
             if res == 1:#poseボタンを押したとき
-                game_data = game_play.get_gd()
-                game_data.save(mod=game_mode)
+                
                 res = pose.main()#pose画面へ
 
                 if res == 1:#再開
@@ -65,16 +66,17 @@ while 1:
                     break
 
             elif res == -1:#GameOverになったとき
+                game_rank.ranking_update(game_data.get_gamedata()[3])
+                game_rank.save(mod=game_mode)#ハイスコア更新
                 game_data = lib.GameData()#データの
                 game_data.save(mod=game_mode)#消去
                 game_play.gd_reset()#ゲームを初期化
-                game_rank.ranking_update(game_data.get_gamedata()[3])
-                game_rank.save(mod=game_mode)#ハイスコア更新
+                
                 break
 
     
     elif res == 3:#設定画面
-        game_mode = option.main()
+        game_mode = option.main(mod=game_mode)
         game_play = game_list[game_mode]
         home.set_vol(bgc_vol=option.bgm_vol,se_vol=option.se_vol)
         for i in range(len(game_list)):
