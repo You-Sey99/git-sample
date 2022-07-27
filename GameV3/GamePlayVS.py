@@ -1,7 +1,6 @@
 # coding=[shift-jis]
 
-from tkinter.messagebox import NO
-from turtle import pos
+
 import Iro_RGB as Iro
 import GameLib as lib
 from GameLocal import *
@@ -13,8 +12,8 @@ import time
 
 
 class PlayAut(gpn.PlayNormal):
-    def __init__(self,level=1, bgc=gpn.BGC, surface=gpn.GAMENN):
-        super().__init__(bgc, surface)
+    def __init__(self,level=1, frame_size=5, bgc=gpn.BGC, clock=300, surface=gpn.GAMENN):
+        super().__init__(bgc=bgc, surface=surface, frame_size=frame_size, clock=clock)
         self.level = int(level)
         self.active_time = int(30/self.level)
         self.active_befor = 0
@@ -27,6 +26,8 @@ class PlayAut(gpn.PlayNormal):
         self.active_noup = 1
         self.count = 0
         self.res = False
+
+        self.active_bonus_now = False
 
     def cards_update1(self, num) -> bool:#移動の前まで
         #self.cards = [lib.Card(0,rect=((CARD_X-CARD_ZURE_X*(i),CARD_Y),CARD_SIZE)) for i in range(CARD_KAZU)]
@@ -92,7 +93,15 @@ class PlayAut(gpn.PlayNormal):
 
 
     def back_ground(self, have=False) -> None:
-        self.res = self.active(rop=self.res)
+        if self.active_bonus_now:
+            self.res = self.active_bonus(rop=self.res)
+
+        else:
+            if self.bonus:
+                self.active_bonus_now = self.do_use_bonus()
+
+            else:
+                self.res = self.active(rop=self.res)
         return super().back_ground(have)
 
 
@@ -223,6 +232,58 @@ class PlayAut(gpn.PlayNormal):
                     self.active_strg = -1
                     self.active_stage = 0
                     self.active_befor = self.time
+                    self.ev_after(pg.KEYUP)
+
+    def do_use_bonus(self) -> bool:
+        for i in range(OKIBA_KAZU):#下のカード>上のカード になってるところがあればTrue,なければFalse
+            sita = 0
+            for j in range(self.strgs[i].get_max()):
+                koko = self.strgs[i].get_no(j)
+                if koko > sita and sita != 0:
+                    self.active_now = True#activeに
+                    self.active_strg = i#動かすstrg
+                    self.active_card = j#動かす一番上,(i,j)が選んだ場所
+                    return True
+
+                else:
+                    if koko == 0:
+                        break
+                    else:
+                        sita = koko
+
+        self.bonus = False
+        return False
+
+
+    def active_bonus(self, rop) -> bool:#bonusの時の処理,bonus＆do_use_bonusの時実行
+        if self.active_stage == 0:
+            #self.bonus = False
+            self.active_strg_top = self.strgs[self.active_strg].get_top()
+            self.active_stage = 2
+            self.sound_se.play_sound("slid",0)
+            return True
+
+        else:
+            if rop:
+                pos_to = self.strgs[self.bonus_strg].get_rect(0)
+                rop = self.strgs[self.active_strg].move(pos_x=pos_to[0],pos_y=pos_to[1],speed=8,num_bottom=self.active_card,num_top=self.active_strg_top)
+                return not rop
+
+            else:
+                self.strgs[self.active_strg].reset_rect()
+                            
+                for i in range(self.active_strg_top-self.active_card+1):
+                    self.strgs[self.bonus_strg].set_no(self.strgs[self.active_strg].get_no(self.active_card+i),i)
+                    self.strgs[self.active_strg].set_no(0,self.active_card+i)
+                
+                self.bonus = False
+                self.active_now = False
+                self.active_bonus_now = False
+                self.active_stage = 0
+                self.active_card = -1
+                self.active_strg = -1
+                self.active_befor = self.time
+                return rop
 
 
             #終わり
@@ -241,5 +302,10 @@ class PlayVS(gpn.PlayNormal):
 
 if __name__ == "__main__":
     vs = PlayAut(level=30,)
+    vs.strgs[0].strg[0].set_no(10)
+    for i in range(9):
+        vs.strgs[2].strg[i].set_no(10-i)
+    vs.strgs[2].strg[4].set_no(8)
+    vs.cards[1].set_no(10)
     a = vs.main()
     print(a)

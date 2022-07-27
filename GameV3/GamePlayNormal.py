@@ -152,8 +152,8 @@ class CardStorage():#旧カード置き場クラス
         return self.max
 
 class PlayNormal(lib.Scene):#ノーマルモードの管理クラス
-    def __init__(self,bgc=BGC, surface=GAMENN,clock=30):
-        super().__init__(sounds={"bgm":"SE,BGM\\bgm_maoudamashii_neorock10.mp3", "gameover":"SE,BGM\se_maoudamashii_jingle02.mp3"} ,bgc=bgc, surface=surface, clock=clock)
+    def __init__(self,frame_size=5,bgc=BGC, clock=30, surface=GAMENN):
+        super().__init__(sounds={"bgm":"SE,BGM\\bgm_maoudamashii_neorock10.mp3", "gameover":"SE,BGM\se_maoudamashii_jingle02.mp3"} ,bgc=bgc, surface=surface, clock=clock, frame_size=frame_size)
         self.cards = [lib.Card(0,rect=((CARD_X-CARD_ZURE_X*(i),CARD_Y),CARD_SIZE)) for i in range(CARD_KAZU)]
         for i in range(CARD_KAZU):
             card_no = random.randint(RAND_MIN,RAND_MAX)
@@ -431,7 +431,7 @@ class PlayNormal(lib.Scene):#ノーマルモードの管理クラス
     def ev_after(self, event: pg.event) -> int:
         super().ev_after(event)
         #print(self.strgs[0].get_no(0))
-        for i in range(OKIBA_KAZU):
+        for i in range(OKIBA_KAZU):#2048を探す
             top = self.strgs[i].get_top()
             for j in range(top+1):
                 if self.strgs[i].get_no(j) > 10:
