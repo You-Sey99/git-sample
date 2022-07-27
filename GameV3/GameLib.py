@@ -531,8 +531,12 @@ class Scene():#ゲームの各場面を管理するクラスの元,必要なメ�
 
 class Box():#Card,TxtBox,Bottunのもとになるクラス
     def __init__(self, rect=((CARD_X,CARD_Y),CARD_SIZE), kado=KADO_DEFO, surface=GAMENN, img=None) -> None:
-        np_rect = np.array(rect)#ここと一個下の文でrectの形をそろえる
-        np_rect = np_rect.flatten()
+        #np_rect = np.array(rect)#ここと一個下の文でrectの形をそろえる
+        #np_rect = np_rect.flatten()
+
+        rect = np.array(rect)
+        np_rect = np.reshape(rect,(4, ))
+
         self.x = float(np_rect[0])
         self.y = float(np_rect[1])
         self.wide = float(np_rect[2])
@@ -540,7 +544,7 @@ class Box():#Card,TxtBox,Bottunのもとになるクラス
 
         self.kado = int(kado)#角の丸み
 
-        self.rect = (self.x, self.y, self.wide, self.high)#rect型で扱った方が楽なところもあるから用意した,x,y,wide,highをいじるときはこれも書き換えるかset_posとかで書き換えること
+        self.rect = [self.x, self.y, self.wide, self.high]#rect型で扱った方が楽なところもあるから用意した,x,y,wide,highをいじるときはこれも書き換えるかset_posとかで書き換えること
         self.sur = surface#表示する画面の指定
         if isinstance(img,pg.Surface):#表示する画像の設定,初期値では画像無し,分岐はSoundsクラスのとこと一緒
             self.img = img

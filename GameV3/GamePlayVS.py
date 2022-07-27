@@ -1,6 +1,8 @@
 # coding=[shift-jis]
 
 
+from tkinter.messagebox import NO
+from matplotlib.pyplot import cla
 import Iro_RGB as Iro
 import GameLib as lib
 from GameLocal import *
@@ -92,7 +94,11 @@ class PlayAut(gpn.PlayNormal):
         return super().cards_update(num)
 
 
-    def back_ground(self, have=False) -> None:
+    def back_ground(self, have=False, gaov=False, add=0) -> None:
+        self.active_mode()
+        return super().back_ground(have, gaov, add)
+
+    def active_mode(self) -> None:
         if self.active_bonus_now:
             self.res = self.active_bonus(rop=self.res)
 
@@ -102,8 +108,6 @@ class PlayAut(gpn.PlayNormal):
 
             else:
                 self.res = self.active(rop=self.res)
-        return super().back_ground(have)
-
 
     def ev_mouse(self, event: pg.event) -> int:
         return ROOP_CODE
@@ -285,27 +289,147 @@ class PlayAut(gpn.PlayNormal):
                 self.active_befor = self.time
                 return rop
 
+class VSCpu(PlayAut):#AutをVSようにカードの位置を変えたやつ
+    def __init__(self, level=1, frame_size=5, bgc=gpn.BGC, clock=300, surface=gpn.GAMENN):
+        super().__init__(level, frame_size, bgc, clock, surface)
+        for i in range(CARD_KAZU):#pos,init_posの変更
+            ca = self.cards[i].get_init_pos()
+            ca[0] = GAM_SIZE[0]+ca[0]
+            self.cards[i].set_init_pos(ca)
+            self.cards[i].set_pos(ca[0],ca[1])
+            self.strgs[i].x = GAM_SIZE[0]+ self.strgs[i].x
+            for j in range(C_MAX):
+                ca = self.strgs[i].strg[j].get_init_pos()
+                ca[0] = GAM_SIZE[0]+ca[0]
+                self.strgs[i].strg[j].set_init_pos(ca)
+                self.strgs[i].strg[j].set_pos(ca[0],ca[1])
 
-            #終わり
-        
+    def cards_update1(self, num) -> bool:
+        #self.cards = [lib.Card(0,rect=((CARD_X-CARD_ZURE_X*(i),CARD_Y),CARD_SIZE)) for i in range(CARD_KAZU)]
+        self.cards[num] = self.cards[2]
+        self.cards[num].movable_on()
+        if num:#使ったカードが１（手元）の時
+            self.cards[num].set_init_pos(((GAM_SIZE[0] +CARD_X-CARD_ZURE_X*1,CARD_Y),CARD_SIZE))
+        else:#使ったカードが0（スペア）の時
+            self.cards[num].set_init_pos(((GAM_SIZE[0] +CARD_X*2,CARD_Y),CARD_SIZE))
+
+        for i in range(2,CARD_KAZU-1):#カードの入れる場所と初期位置を変更
+            self.cards[i] = self.cards[i+1]
+            self.cards[i].set_init_pos(((GAM_SIZE[0] +CARD_X-CARD_ZURE_X*i,CARD_Y),CARD_SIZE))
+
+        no = self.cards[CARD_KAZU-2].get_no()#新しいカードを一番最後に入れる
+        new_no = random.randint(RAND_MIN,RAND_MAX)
+        while no == new_no:
+            new_no = random.randint(RAND_MIN,RAND_MAX)
+        self.cards[CARD_KAZU-1] = lib.Card(new_no,rect=((GAM_SIZE[0] +CARD_X-CARD_ZURE_X*(CARD_KAZU-1),CARD_Y),CARD_SIZE))
+        self.cards[CARD_KAZU-1].set_pos(GAM_SIZE[0] -CARD_SIZE[0],CARD_Y)
+        return True
+
+    def gd_reset(self) -> None:
+        self.bonus = False
+        self.bonus_strg = -1
+
+        self.cards = [lib.Card(0,rect=((GAM_SIZE[0] +CARD_X-CARD_ZURE_X*(i),CARD_Y),CARD_SIZE)) for i in range(CARD_KAZU)]
+        for i in range(CARD_KAZU):
+            card_no = random.randint(RAND_MIN,RAND_MAX)
+            if i == 0:
+                self.cards[i].set_pos(GAM_SIZE[0] +CARD_X*2,CARD_Y)
+                self.cards[i].set_init_pos(((GAM_SIZE[0] +CARD_X*2,CARD_Y),CARD_SIZE))
+            else:
+                mae_no = self.cards[i-1].get_no()
+                while mae_no == card_no:
+                    card_no = random.randint(RAND_MIN,RAND_MAX)
+
+            self.cards[i].set_no(card_no)
+        self.cards[0].movable_on()
+        self.cards[1].movable_on()
+
+        self.strgs = [gpn.CardStorage(pos_x=GAM_SIZE[0] +gpn.STORAGE_X+(gpn.STORAGE_ZURE_X)*i) for i in range(OKIBA_KAZU)]#strage*4
+        self.time = 0
+        self.time_pose = 0
+        self.time_st = 0
+        self.score = 0
+
+class PlayVS():
+    def __init__(self,level, frame_size=5, bgc=gpn.BGC, clock=30, surface=gpn.GAMENN):
+        self.player = gpn.PlayNormal(frame_size=frame_size,bgc=bgc,clock=clock,surface=surface)
+        self.enemy = VSCpu(level=level,frame_size=frame_size,bgc=bgc,clock=clock,surface=surface)
+
+        self.player_hp = 100
+        self.enemy_hp = 100
+
+        self.surface = surface
+        self.disp_w, self.disp_h = self.surface.get_size()
+        self.clock = pg.time.Clock()
+        self.clock_time = clock
+        self.bgc = bgc
+        self.frame_size = frame_size
+
+    def back_ground(self):
+        return 0
 
 
-class PlayVS(gpn.PlayNormal):
-    def __init__(self, level=1, bgc=gpn.BGC, surface=gpn.GAMENN):
-        super().__init__(bgc, surface)
+    def main(self) -> int:
+        #準備
+        resu = ROOP_CODE#
+        self.back_ground()
+        pg.display.update()
+        self.player.sound_bgm.play_sound("bgm",-1)
+        while 1:
+            self.clock.tick(self.clock_time)
+            
+            mo_pos = pg.mouse.get_pos()#マウスカーソルがsurfaceの上にないと止まる
+            self.disp_w, self.disp_h = self.surface.get_size()
+            if (mo_pos[0] < self.frame_size or self.disp_w + self.frame_size < mo_pos[0]) or (mo_pos[1] < self.frame_size or self.disp_h + self.frame_size < mo_pos[1]):
+                self.player.window_out()
+                #continue
+            resu = self.player.befor_event()
+            self.enemy.befor_event()
+            self.enemy.active_mode()
 
+            if resu != ROOP_CODE:
+                return resu
+            event = pg.event.get()
+            if event != []:
+                for ev in event:
+                    self.player.ev_befor(ev)
+                    self.back_ground()
+                    pg.display.update()
+                    if ev.type == pg.QUIT:
+                        resu = self.player.ev_quit(ev)
+                    elif ev.type == pg.MOUSEBUTTONDOWN or ev.type == pg.MOUSEBUTTONUP or ev.type == pg.MOUSEWHEEL or ev.type == pg.MOUSEMOTION:
+                        resu = self.player.ev_mouse(ev)
+                    elif ev.type == pg.KEYDOWN or ev.type == pg.KEYUP:
+                        resu = self.player.ev_key(ev)
+                    elif ev.type == pg.WINDOWENTER or ev.type == pg.WINDOWLEAVE or ev.type == pg.WINDOWFOCUSLOST or ev.type == pg.WINDOWCLOSE:
+                        resu = self.player.ev_window(ev)
+                    else:
+                        resu = self.player.ev_other(ev)
+                    self.player.ev_after(ev)
 
-        self.level = level
+                    #print("R=",ROOP_CODE,", r=",resu)#デバッグ用,後で消す,コメントアウトでprintは大体デバッグ用
+                    if resu != ROOP_CODE:
+                        #print(resu,"ppp")
+                        return resu
+
+            else:
+                self.back_ground()
+                pg.display.update()
+                self.player.ev_no_event()
 
 
 
 
 if __name__ == "__main__":
-    vs = PlayAut(level=30,)
+    #vs = PlayAut(level=30,)
+    vs = VSCpu(level=30)
+    """
     vs.strgs[0].strg[0].set_no(10)
-    for i in range(9):
-        vs.strgs[2].strg[i].set_no(10-i)
-    vs.strgs[2].strg[4].set_no(8)
-    vs.cards[1].set_no(10)
+    for j in range(4):
+        vs.cards[j].set_no(10)
+        for i in range(9):
+            vs.strgs[j].strg[i].set_no(10-i)
+    vs.strgs[2].strg[4].set_no(8)#"""
+    #vs.cards[1].set_no(10)
     a = vs.main()
     print(a)

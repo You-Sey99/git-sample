@@ -246,7 +246,7 @@ class PlayNormal(lib.Scene):#ノーマルモードの管理クラス
         if self.time >= 100000000:#桁の制限
             self.time = 99999999
 
-    def back_ground(self,have=False,gaov=False,add=0) -> None:
+    def back_ground(self,have=False, gaov=False,add=0) -> None:
         super().back_ground()
 
         #self.time = ((time.time()-self.time_st)//0.1)/10 + self.time_pose#今-開始 +前回セーブした分
@@ -541,7 +541,7 @@ if __name__ == "__main__":
     for j in range(4):
         game.cards[j].set_no(1)
         for i in range(9):
-            game.strgs[j].strg[i].set_no(10-i)#"""
+            game.strgs[j].strg[i].set_no(10)#10-i)#"""
 
     #game.strgs[0].strg[8].set_no(0)
     #game.strgs[0].strg[7].set_no(10)
