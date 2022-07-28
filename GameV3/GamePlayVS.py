@@ -810,7 +810,7 @@ class PlayVS():
         n_posx = self.disp_w - (gpn.TIME_X + tb_pos[2])
         if n_posx < gpn.STORAGE_X+(gpn.STORAGE_ZURE_X)*OKIBA_KAZU:
             n_posx = gpn.STORAGE_X+(gpn.STORAGE_ZURE_X)*OKIBA_KAZU +10
-        self.player.time_t.set_txt(str(abs(add -self.player.time)))
+        self.player.time_t.set_txt(str(abs(add -self.enemy.time)))
         self.player.time_t.set_pos(n_posx,gpn.TIME_Y+TBOX_ZURE_Y)
         self.player.time_tbox.set_pos(n_posx,gpn.TIME_Y)
         self.player.score_t.set_txt(str(int(self.player.score)))
@@ -828,6 +828,8 @@ class PlayVS():
 
 
     def back_ground(self, add=0, have=False, gaov=False):
+        self.enemy.time_update()
+        self.player.time_update()
         self.enemy.active_mode()
         self.player.active_mode()
 
@@ -864,6 +866,8 @@ class PlayVS():
             self.enemy_hp_m = 3000
             self.player_hp = 3000
             self.enemy_hp = 3000
+            self.enemy.active_befor = 0
+            self.player.active_befor = 0
 
             for i in range(CARD_KAZU):
                 card_no = random.randint(RAND_MIN,RAND_MAX)
@@ -882,8 +886,8 @@ class PlayVS():
             for i in range(CARD_KAZU):
                 card_no = random.randint(RAND_MIN,RAND_MAX)
                 if i == 0:
-                    self.enemy.cards[i].set_pos(CARD_X*2,CARD_Y)
-                    self.enemy.cards[i].set_init_pos(((CARD_X*2,CARD_Y),CARD_SIZE))
+                    self.enemy.cards[i].set_pos(GAM_SIZE[0] +CARD_X*2,CARD_Y)
+                    self.enemy.cards[i].set_init_pos(((GAM_SIZE[0] +CARD_X*2,CARD_Y),CARD_SIZE))
                 else:
                     mae_no = self.enemy.cards[i-1].get_no()
                     while mae_no == card_no:
@@ -898,10 +902,15 @@ class PlayVS():
         self.player.time_st = time.time()
         self.player.bonus = False
         self.player.bonus_strg = -1
+        self.player.active_now = False
 
         self.enemy.time_st = time.time()
         self.enemy.bonus = False
         self.enemy.bonus_strg = -1
+        self.enemy.active_now = False
+
+        #self.enemy.active_befor = 0
+        #self.player.active_befor = 0
 
         if 0 in (self.player.cards[0].get_no(),self.enemy.cards[0].get_no(),self.player_hp_m,self.enemy_hp_m):
             self.gd_init()
@@ -912,6 +921,8 @@ class PlayVS():
         self.player.sound_bgm.play_sound("bgm",-1)
         while 1:
             self.clock.tick(self.clock_time)
+            if self.enemy.time -self.enemy.active_befor > self.enemy.active_time:
+                print(self.enemy.time," : ",self.enemy.active_befor,"\n",self.enemy.active_now,"\n")
             
             dam = self.damage(self.player.score)
             if dam != 0:
@@ -986,11 +997,13 @@ class PlayVS():
 
     def gd_lord(self,gamedata:list) -> bool:
         res = self.player.gd_lord(gamedata=gamedata[0])
-        res2 = self.player.gd_lord(gamedata=gamedata[2])
+        res2 = self.enemy.gd_lord(gamedata=gamedata[2])
         self.player_hp = gamedata[1][0]
         self.player_hp_m = gamedata[1][1]
         self.enemy_hp = gamedata[3][0]
         self.enemy_hp_m = gamedata[3][1]
+        self.enemy.active_befor = 0
+        self.player.active_befor = 0
 
         return res and res2
 
@@ -1002,6 +1015,8 @@ class PlayVS():
         self.enemy_hp = 0
         self.enemy_hp_m = 0
         self.win = 0
+        self.enemy.active_befor = 0
+        self.player.active_befor = 0
 
     def get_gd(self) -> VSGameData:
         pl = self.player.get_gd()
@@ -1025,8 +1040,8 @@ class PlayVS():
 
 
 if __name__ == "__main__":
-    #vs = PlayAut(level=30,)
-    vs = PlayVS(level=300,life=30)
+    vs = PlayAut(level=30,)
+    #vs = PlayVS(level=300,life=30)
     """
     vs.strgs[0].strg[0].set_no(10)
     for j in range(4):

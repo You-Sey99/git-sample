@@ -375,8 +375,10 @@ class Scene():#ゲームの各場面を管理するクラスの元,必要なメ�
         self.bgc = bgc
         self.frame_size = frame_size
         self.sound_bgm = Sound(sounds=sounds)
+        self.sound_bgm.set_unit(BG_UNIT/5)
         self.sound_bgm.set_vol(1)
         self.sound_se = Sound(sounds={})
+        
 #kokomade
 
     def set_vol(self,bgc_vol:int,se_vol:int) -> None:
