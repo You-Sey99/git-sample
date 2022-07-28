@@ -202,13 +202,13 @@ class GameData():#ゲームデータのやり取りをするクラス,あった�
     def set_card(self, card_no:list) -> bool:#この後のset系はCardとかStrageとかだけデータを取り込むメソッド
         count = True
         for i in range(CARD_KAZU):
-            try:
-                card_no[i] = int(card_no[i])
-            except (IndexError,ValueError):
-                count = False
-                break
+            #try:
+            card_no[i] = int(card_no[i])
+            #except (IndexError,ValueError):
+                #count = False
+                #break
             
-            if card_no[i] < RAND_MIN or RAND_MAX <= card_no[i]:
+            if card_no[i] < RAND_MIN or RAND_MAX < card_no[i]:
                     count = False
         if count:
             self.card_no = card_no

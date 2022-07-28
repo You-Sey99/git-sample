@@ -18,7 +18,7 @@ pose = ps.Pose()
 
 
 game_mode = 0
-game_list = [pn.PlayNormal(),pta.PlayTA(),pvs.PlayVS()]
+game_list = [pn.PlayNormal(),pta.PlayTA(),pvs.PlayVS(level=10)]
 game_play = game_list[0]
 game_mode_list = ["Normal","TimeAttak","VS CPU"]
 

@@ -206,7 +206,7 @@ class VSGameData():
 
         time2 = float(time2)
         score2 = int(score2)
-        res2 = self.en_gd.set_gamedata([card_sub,strg_sub,time,score])
+        res2 = self.en_gd.set_gamedata([card_sub,strg_sub,time2,score2])
 
 
         #hp
@@ -297,11 +297,12 @@ class PlayAut(gpn.PlayNormal):
     def cards_update2(self, num) -> bool:#移動
         move = False#移動
         move2 = False
+        bairitu = 10
         
-        move = self.cards[num].came_back(speed=3*5)
+        move = self.cards[num].came_back(speed=3*bairitu)
         for i in range(2,CARD_KAZU-1):
-            self.cards[i].came_back(speed=3*5)
-        move2 = self.cards[CARD_KAZU-1].came_back(speed=10*5)
+            self.cards[i].came_back(speed=3*bairitu)
+        move2 = self.cards[CARD_KAZU-1].came_back(speed=10*bairitu)
 
         return move and move2
 
@@ -441,7 +442,7 @@ class PlayAut(gpn.PlayNormal):
             if self.active_stage == 0:
                 if not rop:
                     pos = self.strgs[self.active_strg].get_rect(self.active_strg_top)
-                    rop = self.cards[self.active_card].move(pos_x=pos[0], pos_y=pos[1])
+                    rop = self.cards[self.active_card].move(pos_x=pos[0], pos_y=pos[1], speed=50)
                 else:
                     rop = False
                     self.active_stage = 1
@@ -690,7 +691,7 @@ class VSNormal(PlayAut):
             rop = self.ev_mouse4(rop=rop)
 
         elif self.active_stage == 5:#ev_mo2でputできなかったとき
-            rop = self.cards[self.active_card].came_back()
+            rop = self.cards[self.active_card].came_back(speed=80)
             if rop:
                 self.active_stage = 0
                 self.active_strg = -1
@@ -737,7 +738,7 @@ class PlayVS():
         self.enemy_hpbar_b = lib.Box(surface=self.surface, rect=((E_LIFE_BAR_X,E_LIFE_BAR_Y),LIFE_BAR_SIZE))
         self.enemy_hpbar_f = lib.Box(surface=self.surface, rect=E_LIFE_BAR_FRAME)
 
-        self.sound_se = lib.Sound(sounds={"damage":"oto\se_maoudamashii_se_drink02.mp3","win":"","lose":""})
+        self.sound_se = lib.Sound(sounds={"damage":"SE,BGM\maou_se_8bit28.mp3","win":"SE,BGM\maou_se_inst_guitar15.mp3","lose":"SE,BGM\se_maoudamashii_jingle02.mp3"})
  
 
     def damage(self, scr:int) -> int:
@@ -745,8 +746,8 @@ class PlayVS():
             return 0
         else:
             score = scr
-            n = 0
-            while score > 10:
+            n = 1
+            while score >= 10:
                 score = int(score/10)
                 n += 1
 
@@ -932,7 +933,7 @@ class PlayVS():
                 self.back_ground(gaov=True)
                 pg.display.update()
                 pg.time.wait(5000)
-                return self.win
+                return -1
 
             mo_pos = pg.mouse.get_pos()#マウスカーソルがsurfaceの上にないと止まる
             self.disp_w, self.disp_h = self.surface.get_size()
@@ -992,6 +993,7 @@ class PlayVS():
         self.player_hp_m = 0
         self.enemy_hp = 0
         self.enemy_hp_m = 0
+        self.win = 0
 
     def get_gd(self) -> VSGameData:
         pl = self.player.get_gd()
