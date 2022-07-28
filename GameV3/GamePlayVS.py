@@ -940,6 +940,7 @@ class PlayVS():
 
             self.life_bar_update()
             if self.win != 0:
+                self.player.sound_bgm.stop_sound("bgm")
                 if self.win > 0:
                     self.player.gameovera.set_txt("YOU WIN!!")
                     self.sound_se.play_sound("win",0)

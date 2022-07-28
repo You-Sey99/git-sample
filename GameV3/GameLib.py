@@ -503,7 +503,7 @@ class Box():#Card,TxtBox,Bottunのもとになるクラス
         
     def paint(self,col=Iro.KURO,alpha=255) -> None:#pygameの四角を表示するメソッド,alphaで透明度を変えれる(0~255)
         coler = col + (alpha, )
-        pg.draw.rect(self.sur, coler, self.rect, border_radius=self.kado)
+        a = pg.draw.rect(self.sur, coler, self.rect, border_radius=self.kado)
 
     def paint_img(self, alpha=255,add_x=0,add_y=0) -> bool:#画像を表示するメソッド,画像がないときはFalseを返す
         if self.img is None:
