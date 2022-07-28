@@ -895,6 +895,14 @@ class PlayVS():
 
     def main(self) -> int:
         #準備
+        self.player.time_st = time.time()
+        self.player.bonus = False
+        self.player.bonus_strg = -1
+
+        self.enemy.time_st = time.time()
+        self.enemy.bonus = False
+        self.enemy.bonus_strg = -1
+
         if 0 in (self.player.cards[0].get_no(),self.enemy.cards[0].get_no(),self.player_hp_m,self.enemy_hp_m):
             self.gd_init()
 
