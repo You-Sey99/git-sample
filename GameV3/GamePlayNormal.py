@@ -539,8 +539,8 @@ if __name__ == "__main__":
     game = PlayNormal()
     #"""
     for j in range(4):
-        game.cards[j].set_no(1)
-        """
+        game.cards[j].set_no(2)
+        #"""
         for i in range(9):
             game.strgs[j].strg[i].set_no(10-i)#"""
 

@@ -308,8 +308,8 @@ class PlayAut(gpn.PlayNormal):
         if self.strgs[num].noup_flag():#Cardの数字が同じとき
             self.sound_se.play_sound("chain",0)
             return True
-        
-        return False
+        else:
+            return False
            
     def noup2(self, num: int) -> bool:#移動
         top = self.active_strg_top-1
@@ -339,6 +339,7 @@ class PlayAut(gpn.PlayNormal):
                 self.active_noup = 2#noupを次に
             else:
                 self.active_stage += 1#ステージを次に
+                self.active_noup = 1
                 self.score +=(2**self.strgs[self.active_strg].get_no(self.strgs[self.active_strg].get_top()))*(self.count-1)
                 self.cards_update1(self.active_card)
                 self.count = 0
@@ -612,9 +613,10 @@ class VSNormal(PlayAut):
                             self.active_bonus_now = True
                             self.active_card = bou[1]
                             self.active_strg = bou[0]
+                            return ROOP_CODE
 
                     
-                    elif self.pose_bottun.hit():#pose
+                    if self.pose_bottun.hit():#pose
                         self.sound_bgm.stop_sound("bgm")
                         self.sound_se.play_sound("pose",0)
                         return 1
@@ -646,9 +648,10 @@ class VSNormal(PlayAut):
             for i in range(OKIBA_KAZU):
                 if self.strgs[i].hit(self.strgs[i].get_top()+1):
                     p = self.put(i, self.active_card)
-                    self.active_strg = i
-                    self.active_strg_top = self.strgs[i].get_top() +1
-                    break
+                    if p:
+                        self.active_strg = i
+                        self.active_strg_top = self.strgs[i].get_top() +1
+                        break
             if p:
                 self.active_stage = 2
             else:
@@ -742,6 +745,9 @@ class PlayVS():
     def damage(self, scr:int) -> int:
         if scr < 10:
             return 0
+        elif scr >= 15000:
+            dam = self.enemy_hp_m
+            return dam
         else:
             score = scr
             n = 1
@@ -928,6 +934,7 @@ class PlayVS():
                 self.player.score = 0
                 self.sound_se.play_sound("damage",0)
                 if self.enemy_hp <= 0:
+                    self.enemy_hp = 0
                     self.win = 10
 
             dam = self.damage(self.enemy.score)
@@ -936,6 +943,7 @@ class PlayVS():
                 self.enemy.score = 0
                 self.sound_se.play_sound("damage",0)
                 if self.player_hp <= 0:
+                    self.player_hp = 0
                     self.win = -10
 
             self.life_bar_update()
@@ -982,7 +990,7 @@ class PlayVS():
                         resu = self.player.ev_window(ev)
                     else:
                         resu = self.player.ev_other(ev)
-                    self.player.ev_after(ev)
+                    #self.player.ev_after(ev)
 
                     #print("R=",ROOP_CODE,", r=",resu)#デバッグ用,後で消す,コメントアウトでprintは大体デバッグ用
                     if resu != ROOP_CODE:
@@ -1039,15 +1047,19 @@ class PlayVS():
 
 
 if __name__ == "__main__":
-    vs = PlayAut(level=30,)
-    #vs = PlayVS(level=300,life=30)
-    """
-    vs.strgs[0].strg[0].set_no(10)
-    for j in range(4):
-        vs.cards[j].set_no(10)
-        for i in range(9):
-            vs.strgs[j].strg[i].set_no(10-i)
-    vs.strgs[2].strg[4].set_no(8)#"""
-    #vs.cards[1].set_no(10)
-    a = vs.main()
-    print(a)
+    while 1:
+        #vs = PlayAut(level=30,)
+        vs = PlayVS(level=3,life=3000)
+    
+        #"""
+        #vs.player.strgs[0].strg[0].set_no(10)
+        for j in range(4):
+            vs.player.cards[j].set_no(2)
+            for i in range(9):
+                vs.player.strgs[j].strg[i].set_no(10-i)
+        vs.player.strgs[2].strg[4].set_no(8)#"""
+        #vs.cards[1].set_no(10)
+    
+        a = vs.main()
+        vs.gd_reset()
+        print(a)
