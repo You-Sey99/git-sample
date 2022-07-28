@@ -1,11 +1,10 @@
-import Iro_RGB as Iro
-import GameLib as lib
+
 from GameLocal import *
 import GamePlayNormal as gpn
 import pygame as pg
-import sys 
-import random
 import time
+
+#音楽：魔王魂
 
 
 class PlayTA(gpn.PlayNormal):#タイムアタックモード

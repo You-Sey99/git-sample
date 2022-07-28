@@ -5,9 +5,8 @@ import Iro_RGB as Iro
 import GameLib as lib
 from GameLocal import *
 import pygame as pg
-import sys 
-import random
-import time
+
+#音楽：魔王魂
 
 
 SOUND_SET_X = 230

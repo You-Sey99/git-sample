@@ -1,17 +1,17 @@
 # coding=[shift-jis]
 
 
-
 import Iro_RGB as Iro
 import pygame as pg
 import numpy as np
 import math
 import sys 
-import random
-import time
 from GameLocal import *
 
-pg.init()#見える？
+#音楽：魔王魂
+
+
+pg.init()#
 GAMENN = pg.display.set_mode(GAM_SIZE,pg.RESIZABLE)
 pg.display.set_caption("Lib")
 
@@ -202,11 +202,11 @@ class GameData():#ゲームデータのやり取りをするクラス,あった�
     def set_card(self, card_no:list) -> bool:#この後のset系はCardとかStrageとかだけデータを取り込むメソッド
         count = True
         for i in range(CARD_KAZU):
-            #try:
-            card_no[i] = int(card_no[i])
-            #except (IndexError,ValueError):
-                #count = False
-                #break
+            try:
+                card_no[i] = int(card_no[i])
+            except (IndexError,ValueError):
+                count = False
+                break
             
             if card_no[i] < RAND_MIN or RAND_MAX < card_no[i]:
                     count = False
@@ -305,7 +305,7 @@ class GameData():#ゲームデータのやり取りをするクラス,あった�
                 num += t
             else:
                 continue
-                #raise ValueError("era- :GameData is breaked\n")
+                
 
 
         num = ""
@@ -379,7 +379,6 @@ class Scene():#ゲームの各場面を管理するクラスの元,必要なメ�
         self.sound_bgm.set_vol(1)
         self.sound_se = Sound(sounds={})
         
-#kokomade
 
     def set_vol(self,bgc_vol:int,se_vol:int) -> None:
         bgc_vol = int(bgc_vol)
@@ -856,64 +855,4 @@ if __name__ == "__main__":#デバッグ用
         else:
             break
 
-    """
-    GAMENN.fill(Iro.SIRO)
-    a = Card(0)
-    a.paint(alpha=230)
-    #a.set_img(pg.image.load("GameV3/gazou/migi.png"))
-    a.paint_img()
-    a.movable_on()
-    hako = TxtBox("あいうえお")
-    pg.display.update()
-    break_code = False
-    can = False
-    cb = False
-    drg = False
-
-    def bg_update():
-        GAMENN.fill(Iro.PINNKU)
-        a.paint(alpha=200)
-        a.paint_img(alpha=100)
-        hako.paint_txt()
-        pg.display.update()
-
-    while 1:
-        event = pg.event.get()
-
-        if event != []:
-            bg_update()
-            for ev in range(len(event)):
-                if event[ev].type == pg.QUIT:
-                    fin = input("owaru?(y/n) -> ")
-                    if fin =="y" or fin == "yes":
-                        break_code = True
-                        break
-
-                elif event[ev].type == pg.KEYDOWN:
-                    #print("p")
-                    posi = a.get_rect()
-                    can = a.set_pos(str(10+posi[0]),str(10 +posi[1]))
-                    if not can:
-                        print("Sippai")
-                    bg_update()
-                    
-
-                elif event[ev].type == pg.MOUSEBUTTONDOWN:
-                    mb = pg.mouse.get_pressed()#dragの使い方はここ
-                    while mb[0]:
-                        drg = a.drag(drg)
-                        mb = pg.mouse.get_pressed()
-                        bg_update()
-                    else:
-                        drg = False
-                        while not drg:
-                            drg = a.came_back()
-                            bg_update()
-
-                        
-
-        if break_code:
-            break
-
-        #"""
-
+ 

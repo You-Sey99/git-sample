@@ -1,17 +1,15 @@
 # coding=[shift-jis]
 
 
-
-from multiprocessing.connection import wait
-from re import S
 import Iro_RGB as Iro
 import GameLib as lib
 from GameLocal import *
 import GamePlayNormal as gpn
 import pygame as pg
-import sys 
 import random
 import time
+
+#音楽：魔王魂
 
 
 LIFE_BAR_SIZE = (300,40)
@@ -158,7 +156,7 @@ class VSGameData():
                     num += t
                 else:
                     continue
-                    #raise ValueError("era- :GameData is breaked\n")
+
 
         time = float(time)
         score = int(score)
@@ -202,7 +200,7 @@ class VSGameData():
                     num += t
                 else:
                     continue
-                    #raise ValueError("era- :GameData is breaked\n")
+
 
         time2 = float(time2)
         score2 = int(score2)
@@ -319,7 +317,7 @@ class PlayAut(gpn.PlayNormal):
         pos_to = self.strgs[num].get_rect(top-1)#演出の準備
         #print(top)
         #pos_from = self.strgs[num].get_rect(top)
-        #演出,self.yはpos_to[1]に近づいてるのにabs(pos_y-self.y)は大きくなってる
+        #演出,
         fin = self.strgs[num].move(pos_to[0],pos_to[1],num_top=top,speed=0.5*10)
         return fin
 
@@ -333,7 +331,7 @@ class PlayAut(gpn.PlayNormal):
         return True
 
     def noup(self, rop:bool) -> bool:
-        if self.active_noup == 1:#noupの判定
+        if self.active_noup == 1:#noupがどこまで終わってるかの判定
             self.count += 1
             self.active_strg_top = self.strgs[self.active_strg].get_top() +1
             rop = self.noup1(self.active_strg)#noupできるかできないかの判別
@@ -436,7 +434,7 @@ class PlayAut(gpn.PlayNormal):
         return super().befor_event()
 
 
-    def active(self, rop:bool) -> bool:
+    def active(self, rop:bool) -> bool:#自動操作
         if self.active_now:
             #一番有効な場所にカードを動かす
             if self.active_stage == 0:
@@ -487,7 +485,7 @@ class PlayAut(gpn.PlayNormal):
                     self.ev_after(pg.KEYUP)
                     return True
 
-    def do_use_bonus(self) -> bool:
+    def do_use_bonus(self) -> bool:#bonusを使うかどうかの判断
         for i in range(OKIBA_KAZU):#下のカード>上のカード になってるところがあればTrue,なければFalse
             sita = 0
             for j in range(self.strgs[i].get_max()):

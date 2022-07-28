@@ -9,8 +9,8 @@ import GamePose as ps
 import GamePlayNormal as pn
 import GamePlayTimeattak as pta
 import GamePlayVS as pvs
-import pygame as pg
 
+#音楽：魔王魂
 
 
 home = hm.Home()#準備
@@ -43,8 +43,6 @@ while 1:
             game_play.gd_lord(game_data.get_gamedata())#PlayNormalにデータを入れる
             #res = game_n.main()#開始
         else:#始めから
-            #game_rank.ranking_update(game_data.get_gamedata()[3])
-            #game_rank.save(mod=game_mode)#ハイスコア更新
             if game_mode == 2:#VSmode
                 vs_scr = game_data.get_gamedata()
                 vsc = vs_scr[1][0] - vs_scr[3][0]#pl_hp - en_hp
@@ -76,8 +74,6 @@ while 1:
                     break
 
                 elif res == 3:#終了,再開できない
-                    #game_rank.ranking_update(game_data.get_gamedata()[3])
-                    #game_rank.save(mod=game_mode)#ハイスコア更新
                     if game_mode == 2:#vs
                         vs_scr = game_data.get_gamedata()
                         vsc = vs_scr[1][0] - vs_scr[3][0]#pl_hp - en_hp
@@ -94,8 +90,6 @@ while 1:
                     break
 
             elif res == -1:#GameOverになったとき
-                #game_rank.ranking_update(game_data.get_gamedata()[3])
-                #game_rank.save(mod=game_mode)#ハイスコア更新
                 if game_mode == 2:#VSmode
                     vs_scr = game_data.get_gamedata()
                     vsc = vs_scr[1][0] - vs_scr[3][0]#pl_hp - en_hp
@@ -109,14 +103,6 @@ while 1:
                 #game_data = lib.GameData()#データの
                 game_data.save(mod=game_mode)#消去
                 game_play.gd_reset()#ゲームを初期化
-
-                """
-                game_rank.ranking_update(game_data.get_gamedata()[3])
-                game_rank.save(mod=game_mode)#ハイスコア更新
-                game_data = lib.GameData()#データの
-                game_data.save(mod=game_mode)#消去
-                game_play.gd_reset()#ゲームを初期化"""
-                
                 break
 
     

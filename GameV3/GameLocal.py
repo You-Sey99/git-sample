@@ -1,9 +1,10 @@
 # coding=[shift-jis]
 
 
-#aaaaaaaaaaaaaaaaaa
 import Iro_RGB as Iro
 import pygame as pg
+#音楽：魔王魂
+
 
 #定数とかを入れたファイル
 GAM_SIZE = (600,500)#最初の画面の大きさ
@@ -16,24 +17,7 @@ CARD_ZURE_Y = int(CARD_SIZE[1]/6)
 KADO_DEFO = 10#角の丸み
 WAKU_DEFO = 2#枠の太さ
 
-"""#playNormalでしか使わないと思うからそっちに移す
-STORAGE_X = 40
-STORAGE_Y = 40
-STORAGE_ZURE_X = CARD_SIZE[0]*1.5
-STORAGE_ZURE_Y = CARD_ZURE_Y
 
-SCORE_X = 480#scoreの表示位置
-SCORE_Y = 80#
-SCORE_T_X = SCORE_X + 20#「スコア」の表示位置
-SCORE_T_Y = SCORE_Y + 50#
-
-POSE_X = 480#一時停止ボタンの表示位置
-POSE_Y = 300
-
-SCORE_RECT = (SCORE_X,SCORE_Y,0,0)#rect型
-SCORE_T_RECT = (SCORE_T_X,SCORE_T_Y,0,0)
-POSE_RECT = (POSE_X,POSE_Y,0,0)
-"""
 TBOX_SIZE = (130,55)
 TBOX_ZURE_Y = 5 +TBOX_SIZE[1]
 
@@ -67,9 +51,7 @@ font_KyoDaii = pg.font.SysFont("hg正楷書体pro",75)
 
 
 pg.mixer.init()
-#一旦ファイルのパスは保留
-#SE_Click = pg.mixer.Sound("GameV3\oto\se_maoudamashii_element_wind02.mp3")#ファイルのパスの前にGameV3を入れるといい,それか相対パスのコピー
-#SE_Drag = pg.mixer.Sound("oto\ファイル名.mp3")
+
 
 
 if __name__ == "__main__":

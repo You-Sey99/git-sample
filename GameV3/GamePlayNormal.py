@@ -1,15 +1,15 @@
 # coding=[shift-jis]
 
 
-#上手くいくかな？
-from re import S
 import Iro_RGB as Iro
 import GameLib as lib
 from GameLocal import *
 import pygame as pg
-import sys 
 import random
 import time
+
+#音楽：魔王魂
+
 
 BGC = Iro.MOKKASIN
 pg.init()
