@@ -1,4 +1,8 @@
-bgm syber11
+home bgm候補 syber04
+	     syber43
+aco36
+aco10
+aco12
 
 
 se system
